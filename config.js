@@ -1,7 +1,7 @@
 exports.config = {
   backends: { statics: 80 },
   redirect: {
-    "tos-dr.nodejitsu.com": "tos-dr.info"
+    "myfavouritesandwich.nodejitsu.com": "myfavouritesandwich.org"
   },
   domainsDir: 'statics/'
 };
