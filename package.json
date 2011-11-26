@@ -1,0 +1,12 @@
+{
+  "name": "myfavouritesandwich.org",
+  "subdomain": "myfavouritesandwich",
+  "domains": [
+    "myfavouritesandwich.org",
+    "www.myfavouritesandwich.org"
+  ],
+  "scripts": {
+    "start": "server.js"
+  },
+  "version": "0.0.0-8"
+}

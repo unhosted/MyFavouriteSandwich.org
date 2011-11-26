@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+
+    <title>Myfavouritesandwich - An Unhosted demo</title>
+    <link rel="stylesheet" href="css/uncompressed/reset.css" />
+    <link rel="stylesheet" href="css/uncompressed/text.css" />
+    <link rel="stylesheet" href="css/uncompressed/general.css" />
+    <link rel="stylesheet" href="css/uncompressed/layout.css" />
+
+
+    <!-- THE IMPORTANT PART: BEGIN -->
+
+    <script src="http://unhost.it/remoteStorage.js">{
+      onChange: function() {
+        show();
+      },
+      category: 'sandwiches'
+    }</script>
+
+    <!-- THE IMPORTANT PART: END -->
+
+
+    <script>
+      function show() {
+        var sandwich = JSON.parse(
+
+          //GET FROM LOCAL STORAGE:
+          localStorage.getItem('favSandwich')
+
+        );
+        if(sandwich) {
+          document.getElementById('firstIngredient').value = sandwich.ingredients[0];
+          document.getElementById('secondIngredient').value = sandwich.ingredients[1];
+          for(var i=0;i < 2; i++) {
+            if(!(sandwich.ingredients[i])) {
+              sandwich.ingredients[i]='...';
+            }
+          }
+          document.getElementById('showIngredients').innerHTML = 'My favourite sandwich has <strong>'
+            +sandwich.ingredients[0]
+            +'</strong> and <strong>'
+            +sandwich.ingredients[1]
+            +'</strong> on it';
+        } else {
+          document.getElementById('showIngredients').innerHTML = 'My favourite sandwich has';
+          document.getElementById('firstIngredient').value = '';
+          document.getElementById('secondIngredient').value = '';
+        }
+      }
+      
+      function save() {
+        var sandwich =  JSON.stringify({
+            ingredients: [
+              document.getElementById('firstIngredient').value,
+              document.getElementById('secondIngredient').value
+            ]
+          });
+
+        //SET IN LOCAL STORAGE
+        localStorage.setItem('favSandwich', sandwich);
+
+        show();
+      }
+
+    </script>
+  </head>
+  <body onload="show();">
+    <div class="preload"></div>
+    <div id="preheader"></div>
+    <div id="plateContainer">
+      <figure id="plate"></figure>
+    </div>
+    <div id="mainWrap">
+      <div id="unlockedView">
+        <div id="preheader">
+        </div>
+          
+        <header class="data">
+          <p>Try logging in with 'test@yourremotestorage.com'/'unhosted'.<br />Come to the <a href="http://webchat.freenode.net/?channels=unhosted">chat room</a> if you want to help.</p>
+          <p id="showIngredients"></p>
+          <input id="firstIngredient" placeholder="1st ingredient" type="text" onchange="save()"/>
+          <input id="secondIngredient" placeholder="2nd ingredient" type="text" onchange="save()"/>  
+        </header>
+      </div>
+      <div id="footerSpacer">
+      </div>          
+      <footer>
+        <div class="wrapper">
+        <div id="leftcolumn">
+          <h3>So &hellip; what is this all about?</h3>
+          <p>This is an example site that demonstrates the unhosted architecture, separating application logic from per-user data storage. For more explanation and examples see <a href="http://unhosted.org">the Unhosted project website</a>.</p>
+          <p>Also check out the <a href="http://myfavoritebeer.org/">BrowserID example</a> inspired by this.</p>
+        </div>
+        <figure id="island"></figure>
+        <div id="rightcolumn">
+          <h3>What is Unhosted?</h3>
+          <p>
+            <strong><a href="http://unhosted.org">Unhosted</a> is a project for strengthening free software against hosted software. 
+            </strong>
+            An unhosted web app is only source code. Data is saved in per-user remote storage. This benefits <strong>free software</strong>, as well as <strong>scalability</strong>, <strong>robustness</strong>, and <strong>online privacy</strong>.
+          </p>
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>
