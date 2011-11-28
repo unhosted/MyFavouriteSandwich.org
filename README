@@ -1,3 +1,1 @@
-To deploy changes to a nodejitsu:
-npm install -g jitsu
-jitsu deploy
+This is myfavouritesandwich.org, a demo app that shows how to include remoteStorage.js into your localStorage-based app.
