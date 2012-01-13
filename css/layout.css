@@ -28,6 +28,8 @@ header input[type=submit] { border:none; width:266px; height:38px; color:white; 
 header input.submitingredients { background:url('./img/change.png') no-repeat left top; left:50px; }
 header.data input { margin-bottom:10px; }
 header.data input[type=submit] { display:block; margin:0 auto; margin-top:10px; }
+#signin-button { background:url('../images/browserid.png') no-repeat; min-width:79px; min-height:22px; cursor:pointer; border:none; box-shadow:none; }
+
 
 header input[type=submit]:hover { cursor:pointer; }
 header input[type=submit]:active { cursor:pointer; }
