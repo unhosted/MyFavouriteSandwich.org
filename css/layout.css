@@ -24,7 +24,6 @@ header.data form { width:450px; margin:0 auto; margin-bottom:0px; }
 header.data p { margin-bottom:40px; margin-top:20px; }
 
 header form { padding-bottom:20px; }
-header input[type=submit] { border:none; width:266px; height:38px; color:white; text-shadow:0 -1px #8BC0D9; font-size:1em; position:relative; text-indent:-5000px; margin-top:0px; left:1px; margin-bottom:44px; }
 header input.submitingredients { background:url('./img/change.png') no-repeat left top; left:50px; }
 header.data input { margin-bottom:10px; }
 header.data input[type=submit] { display:block; margin:0 auto; margin-top:10px; }
