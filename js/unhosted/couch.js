@@ -28,7 +28,7 @@ define(['./ajax'], function(ajax) {
         var obj = JSON.parse(str);
         localStorage.setItem('_shadowCouchRev_'+key, obj._rev);
         cb(obj.value);
-      }, deadLine);
+      });
     }
     function put(storageAddress, token, key, value, cb) {
       var revision = localStorage.getItem('_shadowCouchRev_'+key);
@@ -44,13 +44,12 @@ define(['./ajax'], function(ajax) {
           localStorage.setItem('_shadowCouchRev_'+key, obj.rev);
         }
         cb();
-      }, deadLine);
+      });
     }
     function delete(storageAddress, token, key, cb) {
       doCall('DELETE', storageAddress+normalizeKey(key), null, token, cb);
     }
     return {
-      init: init,
       get: get,
       put: put,
       delete: delete

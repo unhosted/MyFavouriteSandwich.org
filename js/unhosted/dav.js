@@ -1,6 +1,6 @@
 
 define(['./ajax'], function(ajax) {
-    function keyToAddress(key) {
+    function normalizeKey(key) {
       var i = 0;
       while(i < key.length && key[i] =='u') {
        i++;
@@ -8,52 +8,33 @@ define(['./ajax'], function(ajax) {
       if((i < key.length) && (key[i] == '_')) {
         key = 'u'+key;
       }
-      return localStorage.getItem('_shadowBackendAddress') + key;
+      return key;
     }
-    function doCall(method, key, value, err, cb, deadLine) {
+    function doCall(method, key, value, token, cb, deadLine) {
       var ajaxObj = {
-        url: keyToAddress(key),
+        url: key,
         method: method,
-        error: err,
-        success: cb,
-        deadLine: deadLine
+        success: cb
       }
-      //ajaxObj.headers= {Authorization: 'Bearer '+localStorage.getItem('_shadowBackendToken')};
-      ajaxObj.headers= {Authorization: 'Basic '+localStorage.getItem('_shadowBackendToken')};
+      ajaxObj.headers= {Authorization: 'Bearer '+token};
       ajaxObj.fields={withCredentials: 'true'};
       if(method!='GET') {
         ajaxObj.data=value;
       }
       ajax.ajax(ajaxObj);
     }
-    function init(address, bearerToken) {
-      localStorage.setItem('_shadowBackendAddress', address);
-      localStorage.setItem('_shadowBackendToken', bearerToken);
+    function get(storageAddress, token, key, cb) {
+      doCall('GET', storageAddress+normalizeKey(key), null, token, cb);
     }
-    function get(key, err, cb, deadLine) {
-      console.log('couch.get("'+key+'", err, cb, '+deadLine+');');
-      doCall('GET', key, null, err, function(str) {
-        var obj = JSON.parse(str);
-        cb(obj.value);
-      }, deadLine);
+    function put(storageAddress, token, key, value, cb) {
+      doCall('PUT', storageAddress+normalizeKey(key), value, token, cb);
     }
-    function set(key, value, err, cb, deadLine) {
-      console.log('couch.set("'+key+'", "'+value+'", err, cb, '+deadLine+');');
-      var obj = {
-        value: value
-      };
-      doCall('PUT', key, JSON.stringify(obj), err, function(str) {
-        cb();
-      }, deadLine);
-    }
-    function remove(key, err, cb, deadLine) {
-      console.log('couch.remove("'+key+'", err, cb, '+deadLine+');');
-      doCall('DELETE', key, null, err, cb, deadLine);
+    function delete(storageAddress, token, key, cb) {
+      doCall('DELETE', storageAddress+normalizeKey(key), null, token, cb);
     }
     return {
-      init: init,
-      set: set,
       get: get,
-      remove: remove
-    };
+      put: put,
+      delete: delete
+    }
 });
