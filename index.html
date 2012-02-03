@@ -47,8 +47,8 @@
 
         //SET IN LOCAL STORAGE
         localStorage.setItem('favSandwich', sandwich);
-
         show();
+        push();
       }
 
     </script>
@@ -105,7 +105,22 @@
     <script data-main="http://unhosted.nodejitsu.com/remoteStorage-0.2.0" src="js/require.js"></script>
     <script src="http://browserid.org/include.js"></script>
     <script>
-      var sandwichesClient;
+      function fetch() {
+        var storageAddresses = JSON.parse(localStorage.storageAddresses);
+        var client = remoteStorage.createClient(storageAddresses.sandwiches, localStorage.api, localStorage.oauthToken);
+        client.get('favSandwich', function(value) {
+          if(value != localStorage.favSandwich) {
+            localStorage.favSandwich = value;
+            show();
+          }
+        });
+      }
+      function push() {
+        var storageAddresses = JSON.parse(localStorage.storageAddresses);
+        var client = remoteStorage.createClient(storageAddresses.sandwiches, localStorage.api, localStorage.oauthToken);
+        client.set('favSandwich', localStorage.favSandwich, function() {
+        });
+      }
       function signIn() {
         document.getElementById('signIn').style.display='none';
         document.getElementById('loading').style.display='block';
@@ -117,8 +132,15 @@
             //if(xhr.status == 200) {
               localStorage.loggedIn=true;
               var userAddress = 'michiel@unhosted.org';
-              remoteStorage.createClients(userAddress, ['sandwiches'], 'https://myfavouritesandwich.org/rcvToken.html', function(clients) {
-                sandwichesClient = clients[0];
+              remoteStorage.getInfo(userAddress, ['sandwiches'], 'https://myfavouritesandwich.org/rcvToken.html', function(api, OAuthAddress, storageAddresses) {
+                localStorage.storageAddresses = JSON.stringify(storageAddresses);
+                localStorage.api = api;
+                window.addEventListener('storage', function(key, oldValue, newValue) {
+                  if(key == 'oauthToken') {
+                    fetch();
+                  }
+                });
+                window.open(OAuthAddress);
                 document.getElementById('loggedIn').style.display='block';
                 document.getElementById('loading').style.display='none';
               });
@@ -131,7 +153,7 @@
         });
       }
       function logout() {
-        delete localStorage.loggedIn;
+        localStorage.clear();
         document.getElementById('loggedIn').style.display='none';
         document.getElementById('signIn').style.display='block';
       }
@@ -142,6 +164,15 @@
         document.getElementById('signIn').style.display='block';
       }
       document.getElementById('loading').style.display='none';
+      window.addEventListener('storage', function(key, oldValue, newValue) {
+        if(key == 'loggedIn') {
+          if(localStorage.loggedIn) {
+            document.getElementById('loggedIn').style.display='block';
+          } else {
+            document.getElementById('signIn').style.display='block';
+          }
+        }
+      });
     </script>
 
     <!-- THE IMPORTANT PART: END -->
