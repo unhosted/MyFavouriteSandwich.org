@@ -110,7 +110,7 @@
         document.getElementById('loading').style.display='block';
         navigator.id.get(function(assertion) {
           var xhr = new XMLHttpRequest();
-          xhr.open('POST', 'https://myfavouritesandwich.org/browserid-verify', true);
+          xhr.open('POST', '/browserid-verify', true);
           xhr.onreadystatechange = function() {
             if(xhr.readyState == 4) {
             //if(xhr.status == 200) {
