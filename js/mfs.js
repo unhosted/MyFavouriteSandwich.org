@@ -81,8 +81,8 @@ function signIn() {
       if(xhr.readyState == 4) {
       //if(xhr.status == 200) {
         localStorage.loggedIn=true;
-        var userAddress = 'michiel@unhosted.org';
-        require('remoteStorage', function(remoteStorage) {
+        var userAddress = JSON.parse(xhr.responseText).email;
+        require(['js/unhosted/remoteStorage'], function(remoteStorage) {
           remoteStorage.getInfo(userAddress, ['sandwiches'], 'https://myfavouritesandwich.org/rcvToken.html', function(api, OAuthAddress, storageAddresses) {
             localStorage.storageAddresses = JSON.stringify(storageAddresses);
             localStorage.api = api;
