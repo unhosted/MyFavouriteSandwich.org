@@ -77,6 +77,7 @@
           <p id="showIngredients"></p>
           <input id="firstIngredient" placeholder="1st ingredient" type="text" onchange="save()"/>
           <input id="secondIngredient" placeholder="2nd ingredient" type="text" onchange="save()"/>  
+          <input type="submit" value="logout" onclick="logout();"/>
         </header>
       </div>
       <div id="footerSpacer">
@@ -114,7 +115,7 @@
           xhr.onreadystatechange = function() {
             if(xhr.readyState == 4) {
             //if(xhr.status == 200) {
-              sessionStorage.loggedIn=true;
+              localStorage.loggedIn=true;
               var userAddress = 'michiel@unhosted.org';
               remoteStorage.createClients(userAddress, ['sandwiches'], 'https://myfavouritesandwich.org/rcvToken.html', function(clients) {
                 sandwichesClient = clients[0];
@@ -129,8 +130,14 @@
           xhr.send(assertion);
         });
       }
-      if(sessionStorage.loggedIn) {
-       document.getElementById('loggedIn').style.display='block';
+      function logout() {
+        delete localStorage.loggedIn;
+        document.getElementById('loggedIn').style.display='none';
+        document.getElementById('signIn').style.display='block';
+      }
+
+      if(localStorage.loggedIn) {
+        document.getElementById('loggedIn').style.display='block';
       } else {
         document.getElementById('signIn').style.display='block';
       }
