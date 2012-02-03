@@ -106,22 +106,26 @@
     <script>
       var sandwichesClient;
       function signIn() {
+        document.getElementById('signIn').style.display='none';
+        document.getElementById('loading').style.display='block';
         navigator.id.get(function(assertion) {
           var xhr = new XMLHttpRequest();
-          xhr.open('POST', '/browserid-verify', true);
+          xhr.open('POST', 'https://myfavouritesandwich.org/browserid-verify', true);
           xhr.onreadystatechange = function() {
             if(xhr.readyState == 4) {
             //if(xhr.status == 200) {
               var userAddress = 'michiel@unhosted.org';
               remoteStorage.createClients(userAddress, ['sandwiches'], 'https://myfavouritesandwich.org/rcvToken.html', function(clients) {
                 sandwichesClient = clients[0];
+                document.getElementById('loggedIn').style.display='block';
+                document.getElementById('loading').style.display='none';
               });
             //} else {
             //  error('got status '+xhr.status+' from browserid-verify');
             //}
             }
-          xhr.send(assertion);
           }
+          xhr.send(assertion);
         });
       }
       if(sessionStorage.loggedIn) {
