@@ -71,9 +71,9 @@
           <input type="submit" id="signin-button" value="" onclick="signIn();">
         </header>
         <header id="loggedIn" style="display:none;" class="data">
-          <p>See the <a href="http://www.w3.org/community/unhosted/wiki/RemoteStorage">remoteStorage</a> spec.<br>
-          Come to the <a href="http://webchat.freenode.net/?channels=unhosted">chat room</a> if you want to help.<br>
-          Couchers log in with e.g. 'admin@you.iriscouch.com'.</p>
+          <p>Under construction - doesn't work yet!<br>
+          Come to the <a href="http://webchat.freenode.net/?channels=unhosted">chat room</a> if you want to help.
+          </p>
           <p id="showIngredients"></p>
           <input id="firstIngredient" placeholder="1st ingredient" type="text" onchange="save()"/>
           <input id="secondIngredient" placeholder="2nd ingredient" type="text" onchange="save()"/>  
@@ -114,6 +114,7 @@
           xhr.onreadystatechange = function() {
             if(xhr.readyState == 4) {
             //if(xhr.status == 200) {
+              sessionStorage.loggedIn=true;
               var userAddress = 'michiel@unhosted.org';
               remoteStorage.createClients(userAddress, ['sandwiches'], 'https://myfavouritesandwich.org/rcvToken.html', function(clients) {
                 sandwichesClient = clients[0];
