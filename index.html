@@ -104,42 +104,15 @@
     </div>
     <!-- THE IMPORTANT PART: BEGIN -->
 
-    <script src="http://libredocs.org/remoteStorageClient.js"></script>
+    <script data-main="http://unhosted.nodejitsu.com/remoteStorage-0.2.0" src="http://unhosted.nodejitsu.com/require.js"></script>
     <script src="http://browserid.org/include.js"></script>
     <script>
-      remoteStorageClient.on('incoming', function(key, value) {
-        show();
-      });
-      //remoteStorageClient.configure({
-      //  category: 'sandwiches'
-      //});
-      remoteStorageClient.on('status', function(status) {
-        if(status.userAddress) {
-          document.getElementById('signIn').style.display='none';
-          document.getElementById('loggedIn').style.display='block';
-        }
-        document.getElementById('loading').innerHTML=status.background;
-        for(i in status.buttons) {
-          document.getElementById('loading').innerHTML += ' <input type="submit" value="'+status.buttons[i]+'" onclick="remoteStorageClient.'+status.buttons[i]+'();">';
-        }
-      });
-      function signIn() {
-        document.getElementById('signIn').style.display='none';
-        document.getElementById('loading').style.display='block';
-        navigator.id.get(function(assertion) {
-          remoteStorageClient.signIn('http://myfavouritesandwich.org', assertion);
-          remoteStorageClient.checkForLogin();
-        });
+      if(sessionStorage.loggedIn) {
+        document.getElementById('loggedIn').style.display='block';
+      } else {
+        document.getElementById('signIn').style.display='block';
       }
-      (function() {
-        var sessionObj=JSON.parse(localStorage.getItem('sessionObj'));
-        if(sessionObj) {
-          remoteStorageClient.checkForLogin();
-        } else {
-          document.getElementById('loading').style.display='none';
-          document.getElementById('signIn').style.display='block';
-        }
-      })();
+      document.getElementById('loading').style.display='none';
     </script>
 
     <!-- THE IMPORTANT PART: END -->
