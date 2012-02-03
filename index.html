@@ -104,26 +104,28 @@
     <script data-main="http://unhosted.nodejitsu.com/remoteStorage-0.2.0" src="http://unhosted.nodejitsu.com/require.js"></script>
     <script src="http://browserid.org/include.js"></script>
     <script>
-     var sandwichesClient;
-     function signIn() {
-       navigator.id.get(function(assertion) {
-         var xhr = new XMLHttpRequest();
-         xhr.open('POST', '/browserid-verify', true);
-         xhr.onreadystatechange = function() {
-           if(xhr.readyState == 4) {
-         //    if(xhr.status == 200) {
-               var userAddress = 'michiel@unhosted.org';
-               remoteStorage.createClients(userAddress, ['sandwiches'], 'https://myfavouritesandwich.org/rcvToken.html', function(clients) {
-                 sandwichesClient = clients[0];
-               });
-         //    } else {
-         //      error('got status '+xhr.status+' from browserid-verify');
-         //    }
-           }
-         xhr.send(assertion);
-       });
-     if(sessionStorage.loggedIn) {
-        document.getElementById('loggedIn').style.display='block';
+      var sandwichesClient;
+      function signIn() {
+        navigator.id.get(function(assertion) {
+          var xhr = new XMLHttpRequest();
+          xhr.open('POST', '/browserid-verify', true);
+          xhr.onreadystatechange = function() {
+            if(xhr.readyState == 4) {
+            //if(xhr.status == 200) {
+              var userAddress = 'michiel@unhosted.org';
+              remoteStorage.createClients(userAddress, ['sandwiches'], 'https://myfavouritesandwich.org/rcvToken.html', function(clients) {
+                sandwichesClient = clients[0];
+              });
+            //} else {
+            //  error('got status '+xhr.status+' from browserid-verify');
+            //}
+            }
+          xhr.send(assertion);
+          }
+        });
+      }
+      if(sessionStorage.loggedIn) {
+       document.getElementById('loggedIn').style.display='block';
       } else {
         document.getElementById('signIn').style.display='block';
       }
