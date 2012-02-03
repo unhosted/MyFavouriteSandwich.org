@@ -48,7 +48,9 @@
         //SET IN LOCAL STORAGE
         localStorage.setItem('favSandwich', sandwich);
         show();
-        push();
+        if(localStorage.connected) {
+          push();
+        }
       }
 
     </script>
@@ -75,8 +77,8 @@
           Come to the <a href="http://webchat.freenode.net/?channels=unhosted">chat room</a> if you want to help.
           </p>
           <p id="showIngredients"></p>
-          <input id="firstIngredient" placeholder="1st ingredient" type="text" onchange="save()"/>
-          <input id="secondIngredient" placeholder="2nd ingredient" type="text" onchange="save()"/>  
+          <input id="firstIngredient" placeholder="1st ingredient" type="text" onchange="save();" onkeyup="save();"/>
+          <input id="secondIngredient" placeholder="2nd ingredient" type="text" onchange="save();" onkeyup="save();"/>  
           <input type="submit" value="logout" onclick="logout();"/>
         </header>
       </div>
@@ -102,23 +104,37 @@
     </div>
     <!-- THE IMPORTANT PART: BEGIN -->
 
-    <script data-main="http://unhosted.nodejitsu.com/remoteStorage-0.2.0" src="js/require.js"></script>
+    <script src="js/require.js"></script>
+    <script src="js/unhosted/remoteStorage-0.2.0.js"></script>
     <script src="http://browserid.org/include.js"></script>
     <script>
       function fetch() {
         var storageAddresses = JSON.parse(localStorage.storageAddresses);
         var client = remoteStorage.createClient(storageAddresses.sandwiches, localStorage.api, localStorage.oauthToken);
-        client.get('favSandwich', function(value) {
-          if(value != localStorage.favSandwich) {
-            localStorage.favSandwich = value;
-            show();
+        client.get('timestamp', function(remoteTimestamp) {
+          if(remoteTimestamp > localStorage.timestamp) {
+            client.get('favSandwich', function(value) {
+              if(value != localStorage.favSandwich) {
+                localStorage.favSandwich = value;
+                show();
+              }
+            });
           }
         });
       }
       function push() {
+        var timestamp = new Date().getTime();
+        var favSandwich = localStorage.favSandwich;
         var storageAddresses = JSON.parse(localStorage.storageAddresses);
         var client = remoteStorage.createClient(storageAddresses.sandwiches, localStorage.api, localStorage.oauthToken);
-        client.set('favSandwich', localStorage.favSandwich, function() {
+        client.set('favSandwich', favSandwich, function() {
+          client.set('timestamp', timestamp, function() {
+            if(localStorage.favSandwich == favSandwich) {
+              localStorage.timestamp = timestamp;
+            } else {//raced, try again.
+              push();
+            }
+          });
         });
       }
       function signIn() {
@@ -132,17 +148,21 @@
             //if(xhr.status == 200) {
               localStorage.loggedIn=true;
               var userAddress = 'michiel@unhosted.org';
-              remoteStorage.getInfo(userAddress, ['sandwiches'], 'https://myfavouritesandwich.org/rcvToken.html', function(api, OAuthAddress, storageAddresses) {
-                localStorage.storageAddresses = JSON.stringify(storageAddresses);
-                localStorage.api = api;
-                window.addEventListener('storage', function(key, oldValue, newValue) {
-                  if(key == 'oauthToken') {
-                    fetch();
-                  }
+              require('remoteStorage', function(remoteStorage) {
+                remoteStorage.getInfo(userAddress, ['sandwiches'], 'https://myfavouritesandwich.org/rcvToken.html', function(api, OAuthAddress, storageAddresses) {
+                  localStorage.storageAddresses = JSON.stringify(storageAddresses);
+                  localStorage.api = api;
+                  window.addEventListener('storage', function(key, oldValue, newValue) {
+                    if(key == 'oauthToken') {
+                      localStorage.connected = true;
+                      fetch();
+                      push();
+                    }
+                  });
+                  window.open(OAuthAddress);
+                  document.getElementById('loggedIn').style.display='block';
+                  document.getElementById('loading').style.display='none';
                 });
-                window.open(OAuthAddress);
-                document.getElementById('loggedIn').style.display='block';
-                document.getElementById('loading').style.display='none';
               });
             //} else {
             //  error('got status '+xhr.status+' from browserid-verify');
