@@ -91,9 +91,14 @@ define(['./ajax'], function(ajax) {
     if(options.allowFakefinger) {
       console.log('Trying Fakefinger');
       ajax.ajax({
-        url: 'http://useraddress.net/fakefinger?userAddress='+userAddress,
+        url: 'http://useraddress.net/fakefinger',
+        method: 'POST',
+        data: JSON.stringify({
+          audience: location.protocol+'//'+location.host,
+          userAddress: userAddress
+        }),
         success: function(data) {
-          afterLrddSuccess(data, error, cb);
+          cb(JSON.parse(data));
         },
         error: function(data) {
           afterFakefingerError(data, error, cb);

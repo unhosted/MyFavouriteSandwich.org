@@ -17,7 +17,13 @@ define([
       for(i in categories) {
         storageAddresses[categories[i]] = webfinger.resolveTemplate(attributes.template, categories[i]);
       }
-      cb(attributes.api, attributes.auth, storageAddresses);
+      cb(attributes.api,
+        attributes.auth
+          +'?redirect_uri='+encodeURIComponent(receiverPageAddress)
+          +'&scope'+encodeURIComponent(categories.join(','))
+          +'&response_type=token'
+          +'&client_id='+encodeURIComponent(receiverPageAddress),
+        storageAddresses);
     });
   }
   function getDriver(api, cb) {
