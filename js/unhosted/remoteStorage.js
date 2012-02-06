@@ -13,6 +13,7 @@ define([
       allowSingleOriginWebfinger: false,
       allowFakefinger: true
     }, onError, function(attributes) {
+      var storageAddresses = {};
       for(i in categories) {
         storageAddresses[categories[i]] = webfinger.resolveTemplate(attributes.template, categories[i]);
       }

@@ -94,8 +94,8 @@ function signIn() {
                 push();
               }
             });
-            window.open(OAuthAddress);
-            document.getElementById('loggedIn').style.display='block';
+            localStorage.oauthAddress = OAuthAddress;
+            document.getElementById('clickToConnect').style.display='block';
             document.getElementById('loading').style.display='none';
           });
         });
@@ -106,6 +106,11 @@ function signIn() {
     }
     xhr.send(assertion);
   });
+}
+function doOAuth() {
+  window.open(localStorage.oauthAddress);
+  document.getElementById('loading').style.display='block';
+  document.getElementById('clickToConnect').style.display='none';
 }
 function logout() {
   localStorage.clear();
