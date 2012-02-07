@@ -83,7 +83,7 @@ function signIn() {
         localStorage.loggedIn=true;
         var userAddress = JSON.parse(xhr.responseText).email;
         console.log('logging in '+userAddress);
-        require(['js/unhosted/remoteStorage'], function(remoteStorage) {
+        require(['http://unhosted.nodejitsu.com/0.2.0/remoteStorage'], function(remoteStorage) {
           remoteStorage.getInfo(userAddress, ['sandwiches'], 'https://myfavouritesandwich.org/rcvToken.html', function(api, OAuthAddress, storageAddresses) {
             localStorage.storageAddresses = JSON.stringify(storageAddresses);
             localStorage.api = api;
