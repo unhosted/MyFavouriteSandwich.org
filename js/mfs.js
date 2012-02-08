@@ -83,20 +83,19 @@ function signIn() {
         localStorage.loggedIn=true;
         var userAddress = JSON.parse(xhr.responseText).email;
         console.log('logging in '+userAddress);
-        require(['remoteStorage-0.3.2'], function(remoteStorage) {
-          remoteStorage.getStorageInfo(userAddress, function(err, storageInfo) {
-            localStorage.storageInfo = JSON.stringify(storageInfo);
-            localStorage.oauthAddress = remoteStorage.createOAuthAddress(storageInfo, ['sandwiches'], 'https://myfavouritesandwich.org/rcvToken.html');
-            window.addEventListener('storage', function(key, oldValue, newValue) {
-              if(key == 'oauthToken') {
-                localStorage.connected = true;
-                fetch();
-                push();
-              }
-            });
-            document.getElementById('clickToConnect').style.display='block';
-            document.getElementById('loading').style.display='none';
+        var remoteStorage = require('remoteStorage');
+        remoteStorage.getStorageInfo(userAddress, function(err, storageInfo) {
+          localStorage.storageInfo = JSON.stringify(storageInfo);
+          localStorage.oauthAddress = remoteStorage.createOAuthAddress(storageInfo, ['sandwiches'], 'https://myfavouritesandwich.org/rcvToken.html');
+          window.addEventListener('storage', function(key, oldValue, newValue) {
+            if(key == 'oauthToken') {
+              localStorage.connected = true;
+              fetch();
+              push();
+            }
           });
+          document.getElementById('clickToConnect').style.display='block';
+          document.getElementById('loading').style.display='none';
         });
       //} else {
       //  error('got status '+xhr.status+' from browserid-verify');
