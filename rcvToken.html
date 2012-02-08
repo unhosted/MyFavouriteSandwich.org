@@ -2,10 +2,12 @@
   <head>
     <title>Closing dialog...</title>
     <meta charset="utf-8">
-    <script src="http://unhosted.org/require.js" data-main="http://unhosted.org/0.4.1/remoteStorage.js"></script>
+    <script src="http://unhosted.org/require.js"></script>
     <script>
-      localStorage.bearerToken = remoteStorage.receiveToken();
-      window.close();
+      require(['http://unhosted.org/remoteStorage-0.4.2.js'], function(remoteStorage) {
+        localStorage.bearerToken = remoteStorage.receiveToken();
+        window.close();
+      });
     </script>
   </head>
   <body>
