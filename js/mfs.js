@@ -43,8 +43,8 @@ function save() {
 }
 
 function fetch() {
-  var storageAddresses = JSON.parse(localStorage.storageAddresses);
-  var client = remoteStorage.createClient(storageAddresses.sandwiches, localStorage.api, localStorage.oauthToken);
+  var storageInfo = JSON.parse(localStorage.storageInfo);
+  var client = remoteStorage.createClient(storageInfo, 'sandwiches', localStorage.oauthToken);
   client.get('timestamp', function(remoteTimestamp) {
     if(remoteTimestamp > localStorage.timestamp) {
       client.get('favSandwich', function(value) {
@@ -60,7 +60,7 @@ function push() {
   var timestamp = new Date().getTime();
   var favSandwich = localStorage.favSandwich;
   var storageAddresses = JSON.parse(localStorage.storageAddresses);
-  var client = remoteStorage.createClient(storageAddresses.sandwiches, localStorage.api, localStorage.oauthToken);
+  var client = remoteStorage.createClient(storageInfo, 'sandwiches', localStorage.oauthToken);
   client.set('favSandwich', favSandwich, function() {
     client.set('timestamp', timestamp, function() {
       if(localStorage.favSandwich == favSandwich) {
@@ -83,10 +83,10 @@ function signIn() {
         localStorage.loggedIn=true;
         var userAddress = JSON.parse(xhr.responseText).email;
         console.log('logging in '+userAddress);
-        require(['http://unhosted.nodejitsu.com/0.2.0/remoteStorage'], function(remoteStorage) {
-          remoteStorage.getInfo(userAddress, ['sandwiches'], 'https://myfavouritesandwich.org/rcvToken.html', function(api, OAuthAddress, storageAddresses) {
-            localStorage.storageAddresses = JSON.stringify(storageAddresses);
-            localStorage.api = api;
+        require(['0.3.0/remoteStorage'], function(remoteStorage) {
+          remoteStorage.getStorageInfo(userAddress), function(storageInfo) {
+            localStorage.storageInfo = JSON.stringify(storageInfo);
+            localStorage.oauthAddress = remoteStorage.createOAuthAddress(storagInfo, ['sandwiches'], 'https://myfavouritesandwich.org/rcvToken.html');
             window.addEventListener('storage', function(key, oldValue, newValue) {
               if(key == 'oauthToken') {
                 localStorage.connected = true;
@@ -94,7 +94,6 @@ function signIn() {
                 push();
               }
             });
-            localStorage.oauthAddress = OAuthAddress;
             document.getElementById('clickToConnect').style.display='block';
             document.getElementById('loading').style.display='none';
           });
