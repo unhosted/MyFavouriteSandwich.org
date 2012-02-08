@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="css/layout.css" />
 
   </head>
-  <body onload="show();">
+  <body>
     <div class="preload"></div>
     <div id="preheader"></div>
     <div id="plateContainer">
@@ -31,22 +31,22 @@
           <p>Under construction - doesn't work yet!<br>
           Come to the <a href="http://webchat.freenode.net/?channels=unhosted">chat room</a> if you want to help.
           </p>
-          <input type="submit" id="signin-button" value="" onclick="signIn();">
+          <input type="submit" id="signin-button" value="">
         </header>
         <header id="clickToConnect" style="display:none;" class="data">
           <p>Under construction - doesn't work yet!<br>
           Come to the <a href="http://webchat.freenode.net/?channels=unhosted">chat room</a> if you want to help.
           </p>
-          <input type="submit" value="Click to Connect" onclick="doOAuth();">
+          <input type="submit" value="Click to Connect" id="doOAuthButton">
         </header>
         <header id="loggedIn" style="display:none;" class="data">
           <p>Under construction - doesn't work yet!<br>
           Come to the <a href="http://webchat.freenode.net/?channels=unhosted">chat room</a> if you want to help.
           </p>
           <p id="showIngredients"></p>
-          <input id="firstIngredient" placeholder="1st ingredient" type="text" onchange="save();" onkeyup="save();"/>
-          <input id="secondIngredient" placeholder="2nd ingredient" type="text" onchange="save();" onkeyup="save();"/>  
-          <input type="submit" value="logout" onclick="logout();"/>
+          <input id="firstIngredient" placeholder="1st ingredient" type="text"/>
+          <input id="secondIngredient" placeholder="2nd ingredient" type="text"/>  
+          <input type="submit" value="logout" id="logoutButton"/>
         </header>
       </div>
       <div id="footerSpacer">

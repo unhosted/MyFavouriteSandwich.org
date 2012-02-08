@@ -44,7 +44,7 @@ require(['http://unhosted.org/remoteStorage-0.4.2.js'], function(remoteStorage) 
 
   function fetch() {
     var storageInfo = JSON.parse(localStorage.storageInfo);
-    var client = remoteStorage.createClient(storageInfo, 'sandwiches', localStorage.oauthToken);
+    var client = remoteStorage.createClient(storageInfo, 'sandwiches', localStorage.bearerToken);
     client.get('timestamp', function(remoteTimestamp) {
       if(remoteTimestamp > localStorage.timestamp) {
         client.get('favSandwich', function(value) {
@@ -59,10 +59,9 @@ require(['http://unhosted.org/remoteStorage-0.4.2.js'], function(remoteStorage) 
   function push() {
     var timestamp = new Date().getTime();
     var favSandwich = localStorage.favSandwich;
-    var storageAddresses = JSON.parse(localStorage.storageAddresses);
-    var client = remoteStorage.createClient(storageInfo, 'sandwiches', localStorage.oauthToken);
-    client.set('favSandwich', favSandwich, function() {
-      client.set('timestamp', timestamp, function() {
+    var client = remoteStorage.createClient(JSON.parse(localStorage.storageInfo), 'sandwiches', localStorage.bearerToken);
+    client.put('favSandwich', favSandwich, function() {
+      client.put('timestamp', timestamp, function() {
         if(localStorage.favSandwich == favSandwich) {
           localStorage.timestamp = timestamp;
         } else {//raced, try again.
@@ -83,21 +82,20 @@ require(['http://unhosted.org/remoteStorage-0.4.2.js'], function(remoteStorage) 
           localStorage.loggedIn=true;
           var userAddress = JSON.parse(xhr.responseText).email;
           console.log('logging in '+userAddress);
-          var remoteStorage = require('remoteStorage');
           remoteStorage.getStorageInfo(userAddress, function(err, storageInfo) {
             localStorage.storageInfo = JSON.stringify(storageInfo);
-            localStorage.oauthAddress = remoteStorage.createOAuthAddress(storageInfo, ['sandwiches'], 'https://myfavouritesandwich.org/rcvToken.html');
-            window.addEventListener('storage', function(key, oldValue, newValue) {
-              if(key == 'oauthToken') {
+            localStorage.oauthAddress = remoteStorage.createOAuthAddress(storageInfo, ['sandwiches'], location.protocol+'//myfavouritesandwich.org/rcvToken.html');
+            window.addEventListener('storage', function(evt) {
+              if(evt.key == 'bearerToken') {
                 localStorage.connected = true;
                 fetch();
                 push();
               }
-            });
+            }, false);
             document.getElementById('clickToConnect').style.display='block';
             document.getElementById('loading').style.display='none';
           });
-        //} else {
+        //} else { 
         //  error('got status '+xhr.status+' from browserid-verify');
         //}
         }
@@ -115,6 +113,15 @@ require(['http://unhosted.org/remoteStorage-0.4.2.js'], function(remoteStorage) 
     document.getElementById('loggedIn').style.display='none';
     document.getElementById('signIn').style.display='block';
   }
+
+  document.body.onload = show;
+  document.getElementById('signin-button').onclick=signIn;
+  document.getElementById('doOAuthButton').onclick=doOAuth;
+  document.getElementById('firstIngredient').onchange=save;
+  document.getElementById('firstIngredient').onkeyup=save;
+  document.getElementById('secondIngredient').onchange=save;
+  document.getElementById('secondIngredient').onkeyup=save;
+  document.getElementById('logoutButton').onclick=logout;
 
   if(localStorage.loggedIn) {
     document.getElementById('loggedIn').style.display='block';
