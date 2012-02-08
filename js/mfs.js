@@ -84,9 +84,9 @@ function signIn() {
         var userAddress = JSON.parse(xhr.responseText).email;
         console.log('logging in '+userAddress);
         require(['0.3.0/remoteStorage'], function(remoteStorage) {
-          remoteStorage.getStorageInfo(userAddress), function(storageInfo) {
+          remoteStorage.getStorageInfo(userAddress, function(storageInfo) {
             localStorage.storageInfo = JSON.stringify(storageInfo);
-            localStorage.oauthAddress = remoteStorage.createOAuthAddress(storagInfo, ['sandwiches'], 'https://myfavouritesandwich.org/rcvToken.html');
+            localStorage.oauthAddress = remoteStorage.createOAuthAddress(storageInfo, ['sandwiches'], 'https://myfavouritesandwich.org/rcvToken.html');
             window.addEventListener('storage', function(key, oldValue, newValue) {
               if(key == 'oauthToken') {
                 localStorage.connected = true;
