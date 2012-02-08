@@ -1,20 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
   <head>
-    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-    <title>Myfavouritesandwich - receiving OAuth token...</title>
+    <title>Closing dialog...</title>
+    <meta charset="utf-8">
+    <script src="http://unhosted.org/require.js" data-main="http://unhosted.org/0.4.1/remoteStorage.js"></script>
+    <script>
+      localStorage.bearerToken = remoteStorage.receiveToken();
+      window.close();
+    </script>
   </head>
   <body>
-    Receiving your token...
-    <script>
-      hashParts = window.location.hash.split('&');
-      for(i in hashParts) {
-        var kv = hashParts[i].split('=');
-        if (kv.length == 2 && (kv[0] == 'access_token' || kv[0] == '#access_token')) {
-          localStorage.remoteStorageAccessToken = kv[1];
-          window.close();
-        }
-      }
-    </script>
+    Closing dialog...
   </body>
 </html>
