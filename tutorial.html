@@ -37,7 +37,7 @@
         }
         document.getElementById('doOAuthButton').onclick =  function() {
           //FOR TESTING: var popup = window.open('http://myfavouritesandwich.org/rcvToken.html#access_token=a&b=c');
-          var popup = window.open('http://myfavouritesandwich.org/rcvToken.html#access_token=a&b=c');
+          var popup = window.open(
             remoteStorage.createOAuthAddress(
               JSON.parse(localStorage.currUserStorageInfo),
               ['public', 'pictures'],
@@ -73,5 +73,6 @@
     <input type="submit" value="Get public foo" id="getPublicFooButton">
     <input type="submit" value="Do OAuth" id="doOAuthButton">
     <input type="submit" value="Set Photo as Avatar" id="setPhotoAsAvatarButton">
+    <p><strong>Please note:</strong> We're having some trouble with the BrowserID-based OAuth on Iris Couch. That means you cannot actually use this page right now if you got your remoteStorage account through Libre Docs. We are working to fix this soon, sorry!</p>
   </body>
 </html>
