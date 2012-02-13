@@ -36,16 +36,23 @@
           });
         }
         document.getElementById('doOAuthButton').onclick =  function() {
-          var popup = window.open(
+          //FOR TESTING: var popup = window.open('http://myfavouritesandwich.org/rcvToken.html#access_token=a&b=c');
+          var popup = window.open('http://myfavouritesandwich.org/rcvToken.html#access_token=a&b=c');
             remoteStorage.createOAuthAddress(
               JSON.parse(localStorage.currUserStorageInfo),
               ['public', 'pictures'],
               'https://myfavouritesandwich.org/rcvToken.html'
             )
           );
-          popup.onclose = function() {
-            alert(localStorage.bearerToken);
-          };
+          window.addEventListener('message', function(event) {
+            if(event.origin != location.protocol +'//'+ location.host) {
+              alert('Got unexpected message from '+event.origin);
+            } else {
+              if(event.data.substring(0, 'TOKEN:'.length) == 'TOKEN:') {
+                localStorage.bearerToken = event.data.substring('TOKEN:'.length);
+              }
+            }
+          }, false);
         }
         document.getElementById('setPhotoAsAvatarButton').onclick = function() {
           var storageInfo = JSON.parse(localStorage.currUserStorageInfo);
