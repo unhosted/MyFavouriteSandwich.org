@@ -13,7 +13,7 @@
               alert('no, sorry!');
             } else {
               alert('yes! look: '+JSON.stringify(storageInfo));
-              localStorage.currUserStorageInfo = JSON.stringify(storageInfo);
+              localStorage.setItem('currUserStorageInfo', JSON.stringify(storageInfo));
             }
           });
         }
@@ -36,7 +36,9 @@
           });
         }
         document.getElementById('doOAuthButton').onclick =  function() {
-          var storageInfo = JSON.parse(localStorage.curUserStorageInfo);
+          var storageInfo = JSON.parse(localStorage.currUserStorageInfo);
+          var categories = ['public','pictures'];
+          var redirectUri=location.protocol+'//'+location.host+'/rcvToken.html';
           //window.open(redirectUri+'#access_token=abc');
           window.open(remoteStorage.createOAuthAddress(storageInfo, categories, redirectUri));
           window.addEventListener('message', function(event) {
