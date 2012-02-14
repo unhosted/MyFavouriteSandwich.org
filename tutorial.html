@@ -27,7 +27,8 @@
           window.addEventListener('message', function(event) {
             if(event.origin == location.protocol +'//'+ location.host) {
               localStorage.bearerToken = event.data;
-            }}, false);
+            }
+          }, false);
         }
         document.getElementById('uploadFooDocButton').onclick = function() {
           var dataToUpload= 'Buffalo Buffalo Buffalo Buffalo buffalo buffalo Buffalo Buffalo';

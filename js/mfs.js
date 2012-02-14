@@ -45,9 +45,9 @@ require(['http://unhosted.org/remoteStorage-0.4.2.js'], function(remoteStorage) 
   function fetch() {
     var storageInfo = JSON.parse(localStorage.storageInfo);
     var client = remoteStorage.createClient(storageInfo, 'sandwiches', localStorage.bearerToken);
-    client.get('timestamp', function(remoteTimestamp) {
+    client.get('timestamp', function(err, remoteTimestamp) {
       if(remoteTimestamp > localStorage.timestamp) {
-        client.get('favSandwich', function(value) {
+        client.get('favSandwich', function(err, value) {
           if(value != localStorage.favSandwich) {
             localStorage.favSandwich = value;
             show();
@@ -60,8 +60,8 @@ require(['http://unhosted.org/remoteStorage-0.4.2.js'], function(remoteStorage) 
     var timestamp = new Date().getTime();
     var favSandwich = localStorage.favSandwich;
     var client = remoteStorage.createClient(JSON.parse(localStorage.storageInfo), 'sandwiches', localStorage.bearerToken);
-    client.put('favSandwich', favSandwich, function() {
-      client.put('timestamp', timestamp, function() {
+    client.put('favSandwich', favSandwich, function(err) {
+      client.put('timestamp', timestamp, function(err) {
         if(localStorage.favSandwich == favSandwich) {
           localStorage.timestamp = timestamp;
         } else {//raced, try again.
@@ -85,13 +85,6 @@ require(['http://unhosted.org/remoteStorage-0.4.2.js'], function(remoteStorage) 
           remoteStorage.getStorageInfo(userAddress, function(err, storageInfo) {
             localStorage.storageInfo = JSON.stringify(storageInfo);
             localStorage.oauthAddress = remoteStorage.createOAuthAddress(storageInfo, ['sandwiches'], location.protocol+'//myfavouritesandwich.org/rcvToken.html');
-            window.addEventListener('storage', function(evt) {
-              if(evt.key == 'bearerToken') {
-                localStorage.connected = true;
-                fetch();
-                push();
-              }
-            }, false);
             document.getElementById('clickToConnect').style.display='block';
             document.getElementById('loading').style.display='none';
           });
@@ -105,6 +98,15 @@ require(['http://unhosted.org/remoteStorage-0.4.2.js'], function(remoteStorage) 
   }
   function doOAuth() {
     window.open(localStorage.oauthAddress);
+    window.addEventListener('message', function(event) {
+      if(event.origin == location.protocol +'//'+ location.host) {
+        localStorage.bearerToken = event.data;
+        localStorage.connected = true;
+        document.getElementById('loading').style.display='none';
+        document.getElementById('loggedIn').style.display='block';
+        fetch();
+      }
+    }, false);
     document.getElementById('loading').style.display='block';
     document.getElementById('clickToConnect').style.display='none';
   }
