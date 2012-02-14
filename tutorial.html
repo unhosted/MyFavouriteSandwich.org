@@ -36,6 +36,7 @@
           });
         }
         document.getElementById('doOAuthButton').onclick =  function() {
+          var storageInfo = JSON.parse(localStorage.curUserStorageInfo);
           //window.open(redirectUri+'#access_token=abc');
           window.open(remoteStorage.createOAuthAddress(storageInfo, categories, redirectUri));
           window.addEventListener('message', function(event) {
