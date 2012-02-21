@@ -29,6 +29,9 @@ var Syncer = function() {
       });
     },
     push: function(e) {
+      if(e.key == indexKey) {
+        return;
+      }
       var now = new Date().getTime();
       var index = JSON.parse(localStorage[indexKey]);
       index[e.key] = now;
