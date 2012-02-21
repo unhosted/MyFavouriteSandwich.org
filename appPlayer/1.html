@@ -1,0 +1,13 @@
+<html>
+<head>
+<script>
+window.addEventListener('storage', function(e) {
+  document.getElementById('log').innerHTML += e.key + ' -> ' + e.newValue +'<br>';
+}, false);
+//document.getElementById('log').innerHTML += 'listening';
+</script>
+</head>
+<body>
+<div id="log"></div>
+</body>
+</html>
