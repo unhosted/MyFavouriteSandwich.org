@@ -1,13 +1,27 @@
 <html>
-<head>
-<script>
-window.addEventListener('storage', function(e) {
-  document.getElementById('log').innerHTML += e.key + ' -> ' + e.newValue +'<br>';
-}, false);
-//document.getElementById('log').innerHTML += 'listening';
-</script>
-</head>
-<body>
-<div id="log"></div>
-</body>
+  <head>
+    <script src="syncer.js"></script>
+    <script>
+      function gup(name) {
+        name = name.replace(/[\[]/,'\\\[').replace(/[\]]/,'\\\]');
+        var regexS = '[\\?&]'+name+'=([^&#]*)';
+        var regex = new RegExp(regexS);
+        var results = regex.exec(window.location.href);
+        if(results == null) {
+          return "";
+        } else {
+          return results[1];
+        }
+      }
+      var syncer = new Syncer();
+      syncer.init(gup('api'), gup('url'), gup('token'));
+      window.addEventListener('storage', function(e) {
+        document.getElementById('log').innerHTML += e.key + ' -> ' + e.newValue +'<br>';
+        syncer.push(e);
+      }, false);
+    </script>
+  </head>
+  <body>
+    <div id="log"></div>
+  </body>
 </html>
