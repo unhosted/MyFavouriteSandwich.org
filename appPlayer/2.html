@@ -1,5 +1,17 @@
 <html>
-<input type="submit" onclick="
-localStorage.setItem('date', new Date().getTime());
-">
+  <head>
+    <script>
+      window.addEventListener('storage', function(e) {
+        if(e.key != '_unhosted') {
+          document.getElementById('log').innerHTML += e.key + ' -> ' + e.newValue +'<br>';
+        };
+      }, false);
+    </script>
+  </head>
+  <body>
+    <input type="submit" onclick="
+      localStorage.setItem('date', new Date().getTime());
+    ">
+    <div id="log"></div>
+  </body>
 </html>

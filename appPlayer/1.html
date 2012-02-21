@@ -1,5 +1,6 @@
 <html>
   <head>
+    <script src="http://unhosted.org/require.js"></script>
     <script src="syncer.js"></script>
     <script>
       function gup(name) {
@@ -14,7 +15,10 @@
         }
       }
       var syncer = new Syncer();
-      syncer.init(gup('api'), gup('url'), gup('token'));
+      syncer.init({
+        api: gup('api'),
+        template: gup('template'),
+      }, gup('category'), gup('token'), '_unhosted');
       window.addEventListener('storage', function(e) {
         document.getElementById('log').innerHTML += e.key + ' -> ' + e.newValue +'<br>';
         syncer.push(e);
