@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+  <head>
+    <script>
+      window.addEventListener('storage', function(e) {
+        if(e.key == 'favSandwich') {
+          document.getElementById('favSandwich').value = e.newValue;
+        };
+      }, false);
+    </script>
+  </head>
+  <body>
+    <iframe style="border-style: none;" src="/sync.html?category=sandwiches"></iframe>
+    My Favourite Sandwich has
+      <input id="favSandwich" onkeyup="localStorage.favSandwich = this.value;">
+    on it.
+  </body>
+</html>

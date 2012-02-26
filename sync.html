@@ -1,0 +1,81 @@
+<html>
+  <head>
+    <script src="http://unhosted.org/require.js"></script>
+    <script src="sync.js"></script>
+    <script>
+      function gup(name) {
+        name = name.replace(/[\[]/,'\\\[').replace(/[\]]/,'\\\]');
+        var regexS = '[\\?&]'+name+'=([^&#]*)';
+        var regex = new RegExp(regexS);
+        var results = regex.exec(window.location.href);
+        if(results == null) {
+          return "";
+        } else {
+          return results[1];
+        }
+      }
+      var syncer = new Syncer();
+      function onload () {
+        if(localStorage.storageInfo) {
+          if(localStorage.bearerToken) {
+            var storageInfo = JSON.parse(localStorage.storageInfo);
+            syncer.init({
+              api: storageInfo.api,
+              template: storageInfo.template,
+            }, gup('category'), localStorage.bearerToken, '_unhosted');
+            window.addEventListener('storage', function(e) {
+              document.getElementById('status').innerHTML='syncing...';
+              syncer.push(e, function() {
+                document.getElementById('status').innerHTML='';
+              });
+            }, false);
+          } else {
+            document.getElementById('allow').style.display='block';
+          }
+        } else {
+          document.getElementById('go').style.display='block';
+        }
+      }
+      function go() {
+        document.getElementById('go').style.display='none';
+        document.getElementById('status').innerHTML='checking...';
+        require(['http://unhosted.org/remoteStorage-0.4.3.js'], function(remoteStorage) {
+          remoteStorage.getStorageInfo(document.getElementById('userAddress').value, function(err, storageInfo) {
+            document.getElementById('status').innerHTML='';
+            document.getElementById('allow').style.display='block';
+            localStorage.storageInfo=JSON.stringify(storageInfo);
+          });
+        });
+      }
+      function allow() {
+        require(['http://unhosted.org/remoteStorage-0.4.3.js'], function(remoteStorage) {
+          var storageInfo = JSON.parse(localStorage.storageInfo);
+          var categories = [gup('category')];
+          var redirectUri=location.protocol+'//'+location.host+'/rcvToken.html';
+          //window.open(redirectUri+'#access_token=abc');
+          window.open(remoteStorage.createOAuthAddress(storageInfo, categories, redirectUri));
+          window.addEventListener('message', function(event) {
+            if(event.origin == location.protocol +'//'+ location.host) {
+              localStorage.bearerToken = event.data;
+              document.getElementById('allow').style.display='none';
+              document.getElementById('status').innerHTML='syncing...';
+              syncer.sync(function() {
+                document.getElementById('status').innerHTML='';
+              });
+            }
+          }, false);
+        });
+      }
+    </script>
+  </head>
+  <body onload="onload();">
+    <div id="go" style="display:none;">
+      <input id="userAddress" placeholder="user@host">
+      <input type="submit" value="sync" onclick="go();">
+    </div>
+    <div id="allow" style="display:none;">
+      <input type="submit" value="allow" onclick="allow();">
+    </div>
+    <div id="status"></div>
+  </body>
+</html>
