@@ -32,6 +32,7 @@ define(
       getDriver = function (api, cb) {
         require([api === 'CouchDB'?'./lib/couch.js':'./lib/dav.js'], cb);
       },
+      onReadyStateChange = function() {},
       createClient = function (storageInfo, category, token) {
         var storageAddress = webfinger.resolveTemplate(storageInfo.template, category);
         return {
@@ -49,6 +50,22 @@ define(
             getDriver(storageInfo.api, function (d) {
               d['delete'](storageAddress, token, key, cb);
             });
+          },
+          'sync': function(libPath, onreadystatechange) {
+            onReadyStateChange = onreadystatechange;
+            var syncFrame = document.createElement('iframe');
+            syncFrame.setAttribute('style', 'border-style:none;width:1px;height:1px;');
+            syncFrame.src= location.protocol+'//'+location.host+libPath+'/syncFrame.html'
+              +'?api='+encodeURIComponent(storageInfo.api)
+              +'&template='+encodeURIComponent(storageInfo.template)
+              +'&category='+encodeURIComponent(category)
+              +'&token='+encodeURIComponent(token);
+            document.body.appendChild(syncFrame);
+            window.addEventListener('message', function(event) {
+              if((event.origin == location.protocol +'//'+ location.host) && (event.data.substring(0, 5) == 'sync:')) {
+                onReadyStateChange((event.data == 'sync:ready'));
+              }
+            }, false);
           }
         };
       },
@@ -78,7 +95,7 @@ define(
         }
         return null;
       },
-      onConnect = null,
+      onConnect = function() {},
       connect = function(userAddress, categories, libPath, cb) {
         onConnect = cb;
         window.open(libPath+'/openDialog.html'

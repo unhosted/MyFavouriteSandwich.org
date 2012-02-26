@@ -1,0 +1,38 @@
+<html>
+  <head>
+    <script src="http://unhosted.org/require.js"></script>
+    <script src="sync.js"></script>
+    <script>
+      function gup(name) {
+        name = name.replace(/[\[]/,'\\\[').replace(/[\]]/,'\\\]');
+        var regexS = '[\\?&]'+name+'=([^&#]*)';
+        var regex = new RegExp(regexS);
+        var results = regex.exec(window.location.href);
+        if(results == null) {
+          return "";
+        } else {
+          return decodeURIComponent(results[1]);
+        }
+      }
+      var syncer = new Syncer();
+      function onload () {
+        var storageInfo = JSON.parse(localStorage.storageInfo);
+        parent.postMessage('sync:busy', location.protocol+'//'+location.host);
+        syncer.init({
+          api: gup('api'),
+          template: gup('template'),
+        }, gup('category'), gup('token'), '_unhosted', function() {
+          parent.postMessage('sync:ready', location.protocol+'//'+location.host);
+          });
+        window.addEventListener('storage', function(e) {
+          parent.postMessage('sync:busy', location.protocol+'//'+location.host);
+          syncer.push(e, function() {
+            parent.postMessage('sync:ready', location.protocol+'//'+location.host);
+          });
+        }, false);
+      }
+    </script>
+  </head>
+  <body onload="onload();">
+  </body>
+</html>

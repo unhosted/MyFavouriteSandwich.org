@@ -23,7 +23,7 @@
           var storageInfo = JSON.parse(localStorage.storageInfo);
           var bearerToken = localStorage.bearerToken;
           var sandwichesClient = remoteStorage.createClient(storageInfo, 'sandwiches', bearerToken);
-          sandwichesClient.sync(function(ready) {
+          sandwichesClient.sync('/unhosted', function(ready) {
             if(ready) {
               document.getElementById('status').innerHTML = '';
               document.getElementById('logout').style.display='block';
