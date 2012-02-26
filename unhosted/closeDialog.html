@@ -4,8 +4,23 @@
     <meta charset="utf-8">
     <script src="http://unhosted.org/require.js"></script>
     <script>
+      function gup(name) {
+        name = name.replace(/[\[]/,'\\\[').replace(/[\]]/,'\\\]');
+        var regexS = '[\\?&]'+name+'=([^&#]*)';
+        var regex = new RegExp(regexS);
+        var results = regex.exec(window.location.href);
+        if(results == null) {
+          return "";
+        } else {
+          return results[1];
+        }
+      }
       require(['http://unhosted.org/remoteStorage-0.4.2.js'], function(remoteStorage) {
-        window.opener.postMessage(remoteStorage.receiveToken(), location.protocol+'//'+location.host);
+        var storageInfo = JSON.parse(decodeURIComponent(gup('storageInfo')));
+        window.opener.postMessage(JSON.stringify({
+          storageInfo: storageInfo,
+          bearerToken: remoteStorage.receiveToken()
+        }), location.protocol+'//'+location.host);
         window.close();
       });
     </script>

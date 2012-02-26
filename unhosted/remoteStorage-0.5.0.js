@@ -83,8 +83,8 @@ define(
         onConnect = cb;
         window.open(libPath+'/openDialog.html'
           +'?userAddress='+encodeURIComponent(userAddress)
-          +'&categories='+encodeURIComponent(categories)
-          +'&libPath='+encodeURIComponent(libPath);
+          +'&categories='+encodeURIComponent(JSON.stringify(categories))
+          +'&libPath='+encodeURIComponent(libPath));
         window.addEventListener('message', function(event) {
           if(event.origin == location.protocol +'//'+ location.host) {
             var data = JSON.parse(event.data)

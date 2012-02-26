@@ -9,7 +9,7 @@
           document.getElementById('userAddress').style.display='none';
           document.getElementById('login').style.display='none';
           document.getElementById('status').innerHTML = 'Syncing...';
-          remoteStorage.connect(userAddress, ['sandwiches'], function(err, storageInfo, bearerToken) {
+          remoteStorage.connect(userAddress, ['sandwiches'], '/unhosted', function(err, storageInfo, bearerToken) {
             if(err) {
               alert('Nope');
             } else {
