@@ -18,7 +18,8 @@
           document.getElementById('button').onclick = (connected?function() {
             remoteStorage.disconnect();
           }:function() {
-            remoteStorage.sync(document.getElementById('userAddress').value, ['sandwiches']);//will sync localStorage keys that start with 'sandwiches:'
+            //sync localStorage keys that start with 'sandwiches:'
+            remoteStorage.sync(document.getElementById('userAddress').value, ['sandwiches']);
           });
           document.getElementById('status').innerHTML = (online?(ready?'':'Syncing...'):'Offline');
         });
