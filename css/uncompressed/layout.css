@@ -89,8 +89,9 @@ section.container_12 {
 	}
 		#preheader span span{
 		display: block;
-		position: relative;
-		margin: 15px auto;
+		top:-10px;
+		left:-300px;
+    margin: 15px auto;
 		width: 960px;
 		text-align: left;
 			}

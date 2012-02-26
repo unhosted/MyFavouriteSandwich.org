@@ -14,7 +14,7 @@
 <script>
 //DECIDE WHETHER LOGGED IN:
 function processToken() {
-	if(localStorage.getItem('token') === null) {
+	if(localStorage.getItem('userAddress') === null) {
 		document.getElementById('loginScreen').style.display='block';
 		document.getElementById('loggedIn').style.display='none';
 	} else {
@@ -28,43 +28,22 @@ function processToken() {
 function retrieveFavSandwich() { 
 	document.getElementById('loggedInUser').innerHTML=
 		'<span>Logged in as <strong>'
-		+localStorage.getItem('user_name')
-		+'</strong> [<a onclick="localStorage.removeItem(\'token\');processToken();">Logout</a>]</span>';
-	var req = new XMLHttpRequest();
-	req.onreadystatechange=function()
-          {
-          if (req.readyState==4 && req.status==200)
-            {
-            processFavSandwich(req.responseText);
-            }
-          }
-	req.open("GET", "http://"+localStorage.getItem("dav")+"/favSandwich.json", true);
-	req.setRequestHeader("Authorization", "Basic "+localStorage.getItem("token"));
-	req.withCredentials = "true";
-	req.send();
+		+localStorage.getItem('userAddress')
+		+'</strong> [<a onclick="localStorage.removeItem(\'userAddress\');processToken();">Logout</a>]</span>';
+  processFavSandwich(localStorage['sandwiches:favSandwich']);
 }
 function processFavSandwich(text) {
-	var sandwich = JSON.parse(text);
-	document.getElementById('showFirstIngredient').innerHTML = sandwich.ingredients[0];
-	document.getElementById('showSecondIngredient').innerHTML = sandwich.ingredients[1];
-	document.getElementById('firstIngredient').value = sandwich.ingredients[0];
-	document.getElementById('secondIngredient').value = sandwich.ingredients[1];
+	if(text) {
+    var sandwich = JSON.parse(text);
+	  document.getElementById('showFirstIngredient').innerHTML = sandwich.ingredients[0];
+	  document.getElementById('showSecondIngredient').innerHTML = sandwich.ingredients[1];
+	  document.getElementById('firstIngredient').value = sandwich.ingredients[0];
+	  document.getElementById('secondIngredient').value = sandwich.ingredients[1];
+  }
 }
 function saveFavSandwich(ingredients) {
-	var text = JSON.stringify({"ingredients":ingredients});
-	var req = new XMLHttpRequest();
-	req.onreadystatechange=function()
-          {
-          if (req.readyState==4 && req.status==200)
-            {
-            processFavSandwich(req.responseText);
-            }
-          }
-	req.open("PUT", "http://"+localStorage.getItem("dav")+"/favSandwich.json", true);
-	req.setRequestHeader("Authorization", "Basic "+localStorage.getItem("token"));
-	req.withCredentials = "true";
-	req.send(text);
-	retrieveFavSandwich();//do full round-trip to make sure browser and unhosted storage node are always in sync
+	localStorage['sandwiches:favSandwich'] = JSON.stringify({"ingredients":ingredients});
+  processFavSandwich(localStorage['sandwiches:favSandwich']);
 }
 </script>
 </head>
@@ -88,13 +67,13 @@ function saveFavSandwich(ingredients) {
 			<h1>My Favourite Sandwich</h1>
 			<p>Login with my unhosted account</p>
 			<input id="user" name="unhostedacct" onfocus="if(this.value=='user@provider.org'){this.className='formfocus'; this.value=''}" onblur="if(!this.value){this.className='formblur'; this.value='user@provider.org'}" type="text" value="user@provider.org"/>
-			<input class="submit" name="submit" type="submit" value="Submit!" onclick="localStorage.setItem('user_name', document.getElementById('user').value); window.open('./popup.html', 'Auth2-cs', 'width=500, height=500');">
+			<input class="submit" name="submit" type="submit" value="Submit!" onclick="localStorage.setItem('userAddress', document.getElementById('user').value);processToken();">
 		</header>
 			
 		<div id="register">
 			<p><strong>Don't have an unhosted account? </strong> Register here:</p>
-			<input id="provider" name="unhostedacct" type="text" value="redlibre.org"/>
-			<input class="submit" name="submit" type="submit" value="Create account" onclick="window.open('http://'+document.getElementById('provider').value+'/register.html', 'Register', 'width=500, height=500');">
+			<input id="provider" name="unhostedacct" type="text" value="iriscouch.com"/>
+			<input class="submit" name="submit" type="submit" value="Create account" onclick="alert('Go to LibreDocs.org and sign up there for your IrisCouch account');">
 		</div>
 
 
@@ -106,9 +85,7 @@ function saveFavSandwich(ingredients) {
 
 
 		<div id="preheader">
-			<span>
 				<span id="loggedInUser"></span>
-			</span>
 				
 			
 		</div>
