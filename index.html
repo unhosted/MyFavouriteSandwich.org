@@ -25,13 +25,6 @@
         //display connection status and connect/disconnect button:
         remoteStorage.onReadyStateChange(function(connected, online, ready) {
           if(connected) {
-            document.getElementById('loginScreen').style.display='block';
-            document.getElementById('loggedIn').style.display='none';
-            document.getElementById('login').onclick = function() {
-              //sync localStorage keys that start with 'sandwiches:'
-              remoteStorage.sync(document.getElementById('userAddress').value, ['sandwiches']);
-            };
-          } else {
             document.getElementById('loginScreen').style.display='none';
             document.getElementById('loggedIn').style.display='block';
             document.getElementById('loggedInUser').innerHTML=
@@ -40,7 +33,16 @@
               +'</strong> [<a id="logout">Logout</a>]</span>';
             document.getElementById('logout').onclick= function() {
               remoteStorage.disconnect();
+              delete localStorage.userAddress;
             }
+          } else {
+            document.getElementById('loginScreen').style.display='block';
+            document.getElementById('loggedIn').style.display='none';
+            document.getElementById('login').onclick = function() {
+              //sync localStorage keys that start with 'sandwiches:'
+              localStorage.userAddress = document.getElementById('userAddress').value;
+              remoteStorage.sync(document.getElementById('userAddress').value, ['sandwiches']);
+            };
           }
         });
       });
