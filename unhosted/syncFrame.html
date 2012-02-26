@@ -16,7 +16,6 @@
       }
       var syncer = new Syncer();
       function onload () {
-        var storageInfo = JSON.parse(localStorage.storageInfo);
         parent.postMessage('sync:busy', location.protocol+'//'+location.host);
         syncer.init({
           api: gup('api'),

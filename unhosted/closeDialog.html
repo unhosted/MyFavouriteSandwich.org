@@ -17,7 +17,7 @@
       }
       require(['http://unhosted.org/remoteStorage-0.4.2.js'], function(remoteStorage) {
         var storageInfo = JSON.parse(decodeURIComponent(gup('storageInfo')));
-        window.opener.postMessage(JSON.stringify({
+        window.opener.postMessage('conn:'+JSON.stringify({
           storageInfo: storageInfo,
           bearerToken: remoteStorage.receiveToken()
         }), location.protocol+'//'+location.host);
