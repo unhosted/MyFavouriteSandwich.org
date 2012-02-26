@@ -96,7 +96,11 @@ define(
       },
       onReadyStateChange = function(cb) {
         readyStateChangeHandler = cb;
-        connected = (localStorage['_unhosted:storageInfo'] && localStorage['_unhosted:bearerToken']);
+        if(localStorage['_unhosted:storageInfo'] && localStorage['_unhosted:bearerToken']) {
+          connected = true;
+        } else {
+          connected = false;
+        }
         online = true;
         ready = true;
         readyStateChangeHandler(connected, online, ready);
