@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+  <head>
+    <title>Opening dialog...</title>
+    <meta charset="utf-8">
+    <script src="require.js"></script>
+    <script>
+      require(['./remoteStorage-0.5.0.js'], function(remoteStorage) {
+        var userAddress = gup('userAddress');
+        var categories = gup('categories');
+        var libPath = gup('libPath');
+        remoteStorage.getStorageInfo(userAddress, function(err, storageInfo) {
+          var oauthAddress = createOAuthAddress(storageInfo, categories, libPath+'/closeDialog.html?storageInfo='+encodeURIComponent(JSON.stringify(storageInfo)));
+          window.location = oauthAddress;
+        });
+      });
+    </script>
+  </head>
+  <body>
+    Opening dialog...
+  </body>
+</html>

@@ -1,14 +1,14 @@
 var Syncer = function() {
   var client;
   var indexKey;
-  function init(setStorageInfo, setCategory, setToken, setIndexKey) {
+  function init(setStorageInfo, setCategory, setToken, setIndexKey, cb) {
     indexKey = setIndexKey || '_syncer';
     if(!localStorage[indexKey]) {
       localStorage[indexKey] = JSON.stringify({});
     }
     require(['http://unhosted.org/remoteStorage-0.4.3.js'], function(remoteStorage) {
       client = remoteStorage.createClient(setStorageInfo, setCategory, setToken);
-      sync(function(){});
+      sync(cb);
     });
   }
   function sync(cb) {

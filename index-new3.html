@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+  <head>
+    <script src="/unhosted/require.js"></script>
+    <script> 
+    function onload () {
+      require(['/unhosted/remoteStorage-0.5.0.js'], function(remoteStorage) {
+        function login() {
+          var userAddress = document.getElementById('userAddress').value;
+          document.getElementById('userAddress').style.display='none';
+          document.getElementById('login').style.display='none';
+          document.getElementById('status').innerHTML = 'Syncing...';
+          remoteStorage.connect(userAddress, ['sandwiches'], function(err, storageInfo, bearerToken) {
+            if(err) {
+              alert('Nope');
+            } else {
+              localStorage.storageInfo = JSON.stringify(storageInfo);
+              localStorage.bearerToken = bearerToken;
+              startSyncing();
+            }
+          });
+        }
+        function startSyncing() {
+          var storageInfo = JSON.parse(localStorage.storageInfo);
+          var bearerToken = localStorage.bearerToken;
+          var sandwichesClient = remoteStorage.createClient(storageInfo, 'sandwiches', bearerToken);
+          sandwichesClient.sync(function(ready) {
+            if(ready) {
+              document.getElementById('status').innerHTML = '';
+              document.getElementById('logout').style.display='block';
+            } else {
+              document.getElementById('status').innerHTML = 'Syncing...';
+            }
+          });
+        }
+        function logout() {
+          localStorage.clear();
+          document.getElementById('logout').style.display='none';
+          document.getElementById('userAddress').style.display='block';
+          document.getElementById('login').style.display='block';
+        }
+    
+        document.getElementById('login').onclick = login; 
+        document.getElementById('logout').onclick = logout;
+        if(localStorage.storageInfo && localStorage.bearerToken) {
+          startSyncing();
+        } else {
+          document.getElementById('userAddress').style.display='block';
+          document.getElementById('login').style.display='block';
+        }
+        window.addEventListener('storage', function(e) {
+          if(e.key == 'favSandwich') {
+            document.getElementById('favSandwich').value = e.newValue;
+          };
+        }, false);
+      });
+    }
+    </script>
+  </head>
+  <body onload="onload();">
+    <input id="userAddress" placeholder="user@host" style="display:none;">
+    <input type="submit" value="login" id="login" style="display:none;">
+    <input type="submit" value="logout" id="logout" style="display:none;">
+    <div id="status"></div>
+    
+    My Favourite Sandwich has
+      <input id="favSandwich" onkeyup="localStorage.favSandwich = this.value;">
+    on it.
+  </body>
+</html>

@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+  <head>
+    <title>Closing dialog...</title>
+    <meta charset="utf-8">
+    <script src="http://unhosted.org/require.js"></script>
+    <script>
+      require(['http://unhosted.org/remoteStorage-0.4.2.js'], function(remoteStorage) {
+        window.opener.postMessage(remoteStorage.receiveToken(), location.protocol+'//'+location.host);
+        window.close();
+      });
+    </script>
+  </head>
+  <body>
+    Closing dialog...
+  </body>
+</html>
