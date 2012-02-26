@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+
+    <title>Myfavouritesandwich - An Unhosted demo</title>
+    <link rel="stylesheet" href="css/reset.css" />
+    <link rel="stylesheet" href="css/text.css" />
+    <link rel="stylesheet" href="css/general.css" />
+    <link rel="stylesheet" href="css/layout.css" />
+
+  </head>
+  <body>
+    <div class="preload"></div>
+    <div id="preheader"></div>
+    <div id="plateContainer">
+      <figure id="plate"></figure>
+    </div>
+    <div id="mainWrap">
+      <div id="unlockedView">
+        <div id="preheader">
+        </div>
+          
+        <header id="loading" class="data">
+          <p>Under construction - doesn't work yet!<br>
+          Come to the <a href="http://webchat.freenode.net/?channels=unhosted">chat room</a> if you want to help.
+          </p>
+          Loading...
+        </header>
+        <header id="signIn" style="display:none;" class="data">
+          <p>Under construction - doesn't work yet!<br>
+          Come to the <a href="http://webchat.freenode.net/?channels=unhosted">chat room</a> if you want to help.
+          </p>
+          <input type="submit" id="signin-button" value="">
+        </header>
+        <header id="clickToConnect" style="display:none;" class="data">
+          <p>Under construction - doesn't work yet!<br>
+          Come to the <a href="http://webchat.freenode.net/?channels=unhosted">chat room</a> if you want to help.
+          </p>
+          <input type="submit" value="Click to Connect (password: asdf)" id="doOAuthButton">
+        </header>
+        <header id="loggedIn" style="display:none;" class="data">
+          <p>Under construction - doesn't work yet!<br>
+          Come to the <a href="http://webchat.freenode.net/?channels=unhosted">chat room</a> if you want to help.
+          </p>
+          <p id="showIngredients"></p>
+          <input id="firstIngredient" placeholder="1st ingredient" type="text"/>
+          <input id="secondIngredient" placeholder="2nd ingredient" type="text"/>  
+          <input type="submit" value="logout" id="logoutButton"/>
+        </header>
+      </div>
+      <div id="footerSpacer">
+      </div>          
+      <footer>
+        <div class="wrapper">
+        <div id="leftcolumn">
+          <h3>So &hellip; what is this all about?</h3>
+          <p>This is an example site that demonstrates the unhosted architecture, separating application logic from per-user data storage. For more explanation and examples see <a href="http://unhosted.org">the Unhosted project website</a>.</p>
+          <p>Also check out the <a href="http://myfavoritebeer.org/">BrowserID example</a> inspired by this.</p>
+        </div>
+        <figure id="island"></figure>
+        <div id="rightcolumn">
+          <h3>What is Unhosted?</h3>
+          <p>
+            <strong><a href="http://unhosted.org">Unhosted</a> is a project for strengthening free software against hosted software. 
+            </strong>
+            An unhosted web app is only source code. Data is saved in per-user remote storage. This benefits <strong>free software</strong>, as well as <strong>scalability</strong>, <strong>robustness</strong>, and <strong>online privacy</strong>.
+          </p>
+        </div>
+      </footer>
+    </div>
+
+    <script src="http://unhosted.org/require.js"></script>
+    <script src="js/browserid.js"></script>
+    <script src="js/mfs.js"></script>
+  </body>
+</html>

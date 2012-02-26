@@ -1,0 +1,5 @@
+- put into main (original) index.html
+- make libPath actually work
+- clean up unused code (like client.sync bit)
+- describe API
+- tutorial with -new1, -new2. existing tutorial becomes 'advanced'
