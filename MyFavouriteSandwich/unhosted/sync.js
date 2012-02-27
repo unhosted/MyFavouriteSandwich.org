@@ -19,7 +19,7 @@ var Syncer = function() {
     for(var i = 0; i < localStorage.length; i++) {
       var keyParts = localStorage.key(i).split('$');
       if(keyParts.length == 2 && keyParts[0] == category) {
-        indexCache[category][localStorage.key(i)] = 0;
+        indexCache[category][keyParts[1]] = 0;
       }
     }
     localStorage[indexKey+'_index_'+category] = JSON.stringify(indexCache[category]);
