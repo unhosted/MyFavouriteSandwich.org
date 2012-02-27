@@ -1,11 +1,37 @@
 var Syncer = function() {
   var clients = {};
+  var indexCache = {};
   var indexKey;
-  function init(setStorageInfo, setCategories, setToken, setIndexKey, cb) {
-    indexKey = setIndexKey || '_syncer';
-    if(!localStorage[indexKey]) {
-      localStorage[indexKey] = JSON.stringify({});
+  function getLocalIndex(category) {
+    if(indexCache[category]) {//this is necessary because localStorage contents is not updated instantly on write
+      return indexCache[category];
     }
+    var str = localStorage[indexKey+'_index_'+category];
+    if(str) {
+      try {
+        indexCache[category] = JSON.parse(str);
+        return indexCache[category];
+      } catch (e) {
+      }
+    }
+    //build up index from scratch:
+    indexCache[category] = {};
+    for(var i = 0; i < localStorage.length; i++) {
+      var keyParts = localStorage.key(i).split('$');
+      if(keyParts.length == 2 && keyParts[0] == category) {
+        indexCache[category][localStorage.key(i)] = 0;
+      }
+    }
+    localStorage[indexKey+'_index_'+category] = JSON.stringify(indexCache[category]);
+    return indexCache[category];
+  }
+  function updateLocalIndex(category, key) {
+    getLocalIndex(category);//prime indexCache
+    indexCache[category][key] = new Date().getTime();
+    localStorage[indexKey+'_index_'+category] = JSON.stringify(indexCache[category]);
+  }
+  function init(setStorageInfo, setCategories, setToken, setIndexKey, cb) {
+    indexKey = setIndexKey;
     require(['http://unhosted.org/remoteStorage-0.4.3.js'], function(remoteStorage) {
       for(var i in setCategories) {
         clients[setCategories[i]] = remoteStorage.createClient(setStorageInfo, setCategories[i], setToken);
@@ -18,25 +44,24 @@ var Syncer = function() {
       cb();
       return;
     }
-    for(var i in clients) {
-      clients[i].get(indexKey, function(err, data) {
+    for(var category in clients) {
+      clients[category].get(indexKey, function(err, data) {
         if((!err) && data) {
           var remoteIndex = JSON.parse(data);
-          var localIndex = JSON.parse(localStorage[clients[i]+'$'+indexKey]);
+          var localIndex = getLocalIndex(category);
+          SON.parse(localStorage[clients[category]+'$'+indexKey]);
           var key;
           for(key in remoteIndex) {
             if(!localIndex[key] || localIndex[key] < remoteIndex[key]) {
               clients[i].get(key, function(err, data) {
-                localIndex = JSON.parse(localStorage[clients[i]+'$'+indexKey]);
-                localIndex[key] = remoteIndex[key];
-                localStorage[clients[i]+'$'+indexKey] = JSON.stringify(localIndex);
-                localStorage[clients[i]+'$'+key] = data;
+                updateLocalIndex(category, key);
+                localStorage[category+'$'+key] = data;
               });
             }
           }
           for(key in localIndex) {
             if(!remoteIndex[key] || remoteIndex[key] < localIndex[key]) {
-              clients[i].put(key, localStorage[clients[i]+'$'+key], function(err, data) {
+              clients[category].put(key, localStorage[category+'$'+key], function(err, data) {
               });
             }
           }
@@ -47,16 +72,13 @@ var Syncer = function() {
   }
   function push(e, cb) {
     var parts = e.key.split('$');
-    if((parts.length != 2) || (parts[0] == indexKey)) {
+    if(parts.length != 2) {
       return;
     }
-    var now = new Date().getTime();
-    var index = JSON.parse(localStorage[parts[0]+'$'+indexKey]);
-    index[parts[1]] = now;
-    localStorage[parts[0]+'$'+indexKey] = JSON.stringify(index);
+    var index = updateLocalIndex(parts[0], parts[1]);
     if(clients[parts[0]]) {
-      clients[parts[0]].put(indexKey, localStorage[parts[0]+'$'+indexKey], function(err, data) {
-        client.put(parts[1], e.newValue, function(err, data) {
+      clients[parts[0]].put(indexKey, getLocalIndex(parts[0]), function(err, data) {
+        clients[parts[0]].put(parts[1], e.newValue, function(err, data) {
           cb();
         });
       });
