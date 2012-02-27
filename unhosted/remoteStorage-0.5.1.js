@@ -49,22 +49,6 @@ define(
             getDriver(storageInfo.api, function (d) {
               d['delete'](storageAddress, token, key, cb);
             });
-          },
-          'sync': function(libPath) {
-            var syncFrame = document.createElement('iframe');
-            syncFrame.setAttribute('style', 'border-style:none;width:1px;height:1px;');
-            syncFrame.src= location.protocol+'//'+location.host+libPath+'/syncFrame.html'
-              +'?api='+encodeURIComponent(storageInfo.api)
-              +'&template='+encodeURIComponent(storageInfo.template)
-              +'&category='+encodeURIComponent(category)
-              +'&token='+encodeURIComponent(token);
-            document.body.appendChild(syncFrame);
-            window.addEventListener('message', function(event) {
-              if((event.origin == location.protocol +'//'+ location.host) && (event.data.substring(0, 5) == 'sync:')) {
-                ready = (event.data == 'sync:ready');
-                readyStateChangeHandler(connected, online, ready);
-              }
-            }, false);
           }
         };
       },
@@ -122,11 +106,20 @@ define(
               localStorage['_unhosted$storageInfo'] = JSON.stringify(data.storageInfo);
               localStorage['_unhosted$bearerToken'] = data.bearerToken;
               connected = true;
-              var i;
-              for(i in categories) {
-                var client = createClient(data.storageInfo, categories[i], data.bearerToken);
-                client.sync(libPath);
-              }
+              var syncFrame = document.createElement('iframe');
+              syncFrame.setAttribute('style', 'border-style:none;width:1px;height:1px;');
+              syncFrame.src= location.protocol+'//'+location.host+libPath+'/syncFrame.html'
+                +'?api='+encodeURIComponent(data.storageInfo.api)
+                +'&template='+encodeURIComponent(data.storageInfo.template)
+                +'&categories='+encodeURIComponent(JSON.stringify(categories))
+                +'&token='+encodeURIComponent(token);
+              document.body.appendChild(syncFrame);
+              window.addEventListener('message', function(event) {
+                if((event.origin == location.protocol +'//'+ location.host) && (event.data.substring(0, 5) == 'sync:')) {
+                  ready = (event.data == 'sync:ready');
+                  readyStateChangeHandler(connected, online, ready);
+                }
+              }, false);
             }
           }
         }, false);

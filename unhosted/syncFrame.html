@@ -20,7 +20,7 @@
         syncer.init({
           api: gup('api'),
           template: gup('template'),
-        }, gup('category'), gup('token'), '_unhosted', function() {
+        }, JSON.parse(gup('categories')), gup('token'), '_unhosted', function() {
           parent.postMessage('sync:ready', location.protocol+'//'+location.host);
           });
         window.addEventListener('storage', function(e) {
