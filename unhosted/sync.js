@@ -76,6 +76,9 @@ var Syncer = function() {
     cb();//not really finished here yet actually
   }
   function push(e, cb) {
+    if(!e.key) {//this happens on localStorage.clear()
+      return;
+    }
     var parts = e.key.split('$');
     if(parts.length != 2) {
       return;
