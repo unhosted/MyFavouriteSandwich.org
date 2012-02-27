@@ -104,23 +104,29 @@ define(
             if(event.data.substring(0, 5) == 'conn:') {
               var data = JSON.parse(event.data.substring(5));
               localStorage['_unhosted$storageInfo'] = JSON.stringify(data.storageInfo);
+              localStorage['_unhosted$categoriesToSync'] = JSON.stringify(categories);
               localStorage['_unhosted$bearerToken'] = data.bearerToken;
-              connected = true;
-              var syncFrame = document.createElement('iframe');
-              syncFrame.setAttribute('style', 'border-style:none;width:1px;height:1px;');
-              syncFrame.src= location.protocol+'//'+location.host+libPath+'/syncFrame.html'
-                +'?api='+encodeURIComponent(data.storageInfo.api)
-                +'&template='+encodeURIComponent(data.storageInfo.template)
-                +'&categories='+encodeURIComponent(JSON.stringify(categories))
-                +'&token='+encodeURIComponent(data.bearerToken);
-              document.body.appendChild(syncFrame);
-              window.addEventListener('message', function(event) {
-                if((event.origin == location.protocol +'//'+ location.host) && (event.data.substring(0, 5) == 'sync:')) {
-                  ready = (event.data == 'sync:ready');
-                  readyStateChangeHandler(connected, online, ready);
-                }
-              }, false);
+              startSync();
             }
+          }
+        }, false);
+      },
+      startSync = function() { 
+        var libPath = '/unhosted';
+        var storageInfo = JSON.parse(localStorage['_unhosted$storageInfo']);
+        connected = true;
+        var syncFrame = document.createElement('iframe');
+        syncFrame.setAttribute('style', 'border-style:none;width:1px;height:1px;');
+        syncFrame.src= location.protocol+'//'+location.host+libPath+'/syncFrame.html'
+          +'?api='+encodeURIComponent(storageInfo.api)
+          +'&template='+encodeURIComponent(storageInfo.template)
+          +'&categories='+encodeURIComponent(localStorage['_unhosted$categoriesToSync'])
+          +'&token='+encodeURIComponent(localStorage['_unhosted$bearerToken']);
+        document.body.appendChild(syncFrame);
+        window.addEventListener('message', function(event) {
+          if((event.origin == location.protocol +'//'+ location.host) && (event.data.substring(0, 5) == 'sync:')) {
+            ready = (event.data == 'sync:ready');
+            readyStateChangeHandler(connected, online, ready);
           }
         }, false);
       },
@@ -129,6 +135,13 @@ define(
         connected = false;
         readyStateChangeHandler(connected, online, ready);
       };
+  if(localStorage['_unhosted$categoriesToSync']) {
+    try {
+      startSync();
+    } catch(e) {
+      console.log('could not sync categories '+localStorage['_unhosted$categoriesToSync']);
+    }
+  }
   return {
     getStorageInfo     : getStorageInfo,
     createOAuthAddress : createOAuthAddress,
