@@ -96,7 +96,7 @@ define(
       },
       onReadyStateChange = function(cb) {
         readyStateChangeHandler = cb;
-        if(localStorage['_unhosted:storageInfo'] && localStorage['_unhosted:bearerToken']) {
+        if(localStorage['_unhosted$storageInfo'] && localStorage['_unhosted$bearerToken']) {
           connected = true;
         } else {
           connected = false;
@@ -119,8 +119,9 @@ define(
           if(event.origin == location.protocol +'//'+ location.host) {
             if(event.data.substring(0, 5) == 'conn:') {
               var data = JSON.parse(event.data.substring(5));
-              localStorage['_unhosted:storageInfo'] = JSON.stringify(data.storageInfo);
-              localStorage['_unhosted:bearerToken'] = data.bearerToken;
+              localStorage['_unhosted$storageInfo'] = JSON.stringify(data.storageInfo);
+              localStorage['_unhosted$bearerToken'] = data.bearerToken;
+              connected = true;
               var i;
               for(i in categories) {
                 var client = createClient(data.storageInfo, categories[i], data.bearerToken);
@@ -132,7 +133,8 @@ define(
       },
       disconnect = function() {
         localStorage.clear();
-        readyStateChangeHandler(false, online, true);
+        connected = false;
+        readyStateChangeHandler(connected, online, ready);
       };
   return {
     getStorageInfo     : getStorageInfo,

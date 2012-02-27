@@ -42,7 +42,7 @@ var Syncer = function() {
     });
   }
   function push(e, cb) {
-    if(e.key == indexKey) {
+    if(e.key.substring(0, indexKey.length) == indexKey) {
       return;
     }
     var now = new Date().getTime();

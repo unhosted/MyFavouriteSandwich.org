@@ -16,7 +16,7 @@
     function onload () {
       //handle changes coming in from other tabs - and other devices!
       window.addEventListener('storage', function(e) {
-        if(e.key == 'sandwiches:favSandwich') {
+        if(e.key == 'sandwiches$favSandwich') {
           processFavSandwich(e.newValue);
         };
       }, false);
@@ -32,8 +32,8 @@
               +localStorage.getItem('userAddress')
               +'</strong> [<a id="logout">Logout</a>]</span>';
             document.getElementById('logout').onclick= function() {
-              remoteStorage.disconnect();
               delete localStorage.userAddress;
+              remoteStorage.disconnect();
             }
           } else {
             document.getElementById('loginScreen').style.display='block';
@@ -52,7 +52,7 @@
 
 //LOGGED IN:
 function retrieveFavSandwich() { 
-  processFavSandwich(localStorage['sandwiches:favSandwich']);
+  processFavSandwich(localStorage['sandwiches$favSandwich']);
 }
 function processFavSandwich(text) {
 	if(text) {
@@ -64,8 +64,8 @@ function processFavSandwich(text) {
   }
 }
 function saveFavSandwich(ingredients) {
-	localStorage['sandwiches:favSandwich'] = JSON.stringify({"ingredients":ingredients});
-  processFavSandwich(localStorage['sandwiches:favSandwich']);
+	localStorage['sandwiches$favSandwich'] = JSON.stringify({"ingredients":ingredients});
+  processFavSandwich(localStorage['sandwiches$favSandwich']);
 }
 </script>
 </head>
