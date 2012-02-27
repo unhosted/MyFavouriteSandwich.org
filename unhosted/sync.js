@@ -14,7 +14,7 @@ var Syncer = function() {
     });
   }
   function sync(cb) {
-    if(!client) {
+    if(!clients.length) {
       cb();
       return;
     }

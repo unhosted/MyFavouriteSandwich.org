@@ -112,7 +112,7 @@ define(
                 +'?api='+encodeURIComponent(data.storageInfo.api)
                 +'&template='+encodeURIComponent(data.storageInfo.template)
                 +'&categories='+encodeURIComponent(JSON.stringify(categories))
-                +'&token='+encodeURIComponent(token);
+                +'&token='+encodeURIComponent(data.bearerToken);
               document.body.appendChild(syncFrame);
               window.addEventListener('message', function(event) {
                 if((event.origin == location.protocol +'//'+ location.host) && (event.data.substring(0, 5) == 'sync:')) {
