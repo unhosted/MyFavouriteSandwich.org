@@ -1,0 +1,9 @@
+- make libPath actually work
+- clean up unused code (like client.sync bit)
+- describe API
+- deal with opening the syncFrame on the same domain in various tabs ("I'm Brian of Nazarath" message across tabs? otherwise send custom event or detect setting of special localStorage key)
+- deal with upload failures (pull can be parallel, push should be serial)
+- deal with upload timeouts
+- send index on failure or on completion (actually, if pushing a specific key fail, pushing index could also fail)
+- prevent browsing away while syncing
+- tutorial with -new1, -new2. existing tutorial becomes 'advanced'
