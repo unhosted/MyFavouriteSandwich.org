@@ -49,7 +49,7 @@ var Syncer = function() {
           var key;
           for(key in remoteIndex) {
             if(!localIndex[key] || localIndex[key] < remoteIndex[key]) {
-              clients[i].get(key, function(err, data) {
+              clients[category].get(key, function(err, data) {
                 updateLocalIndex(category, key);
                 localStorage[category+'$'+key] = data;
               });
