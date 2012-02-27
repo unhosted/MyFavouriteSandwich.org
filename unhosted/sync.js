@@ -49,7 +49,7 @@ var Syncer = function() {
         if((!err) && data) {
           var remoteIndex = JSON.parse(data);
           var localIndex = getLocalIndex(category);
-          SON.parse(localStorage[clients[category]+'$'+indexKey]);
+          JSON.parse(localStorage[clients[category]+'$'+indexKey]);
           var key;
           for(key in remoteIndex) {
             if(!localIndex[key] || localIndex[key] < remoteIndex[key]) {
@@ -59,16 +59,21 @@ var Syncer = function() {
               });
             }
           }
+          var putIndex = false;
           for(key in localIndex) {
             if(!remoteIndex[key] || remoteIndex[key] < localIndex[key]) {
+              putIndex = true;
               clients[category].put(key, localStorage[category+'$'+key], function(err, data) {
               });
             }
           }
-          cb();//not really finished here yet actually
+          //todo: deal with upload failures
+          clients[category].put(indexKey, JSON.stringify(localIndex), function(err, data) {
+          });
         }
       });
     }
+    cb();//not really finished here yet actually
   }
   function push(e, cb) {
     var parts = e.key.split('$');
@@ -77,7 +82,7 @@ var Syncer = function() {
     }
     var index = updateLocalIndex(parts[0], parts[1]);
     if(clients[parts[0]]) {
-      clients[parts[0]].put(indexKey, getLocalIndex(parts[0]), function(err, data) {
+      clients[parts[0]].put(indexKey, JSON.stringify(getLocalIndex(parts[0])), function(err, data) {
         clients[parts[0]].put(parts[1], e.newValue, function(err, data) {
           cb();
         });
