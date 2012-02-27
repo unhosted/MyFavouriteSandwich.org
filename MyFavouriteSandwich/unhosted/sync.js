@@ -40,10 +40,6 @@ var Syncer = function() {
     });
   }
   function sync(cb) {
-    if(!clients.length) {
-      cb();
-      return;
-    }
     for(var category in clients) {
       clients[category].get(indexKey, function(err, data) {
         if((!err) && data) {
