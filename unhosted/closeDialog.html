@@ -2,7 +2,7 @@
   <head>
     <title>Closing dialog...</title>
     <meta charset="utf-8">
-    <script src="http://unhosted.org/require.js"></script>
+    <script src="./require.js"></script>
     <script>
       function gup(name) {
         name = name.replace(/[\[]/,'\\\[').replace(/[\]]/,'\\\]');
@@ -15,7 +15,7 @@
           return results[1];
         }
       }
-      require(['http://unhosted.org/remoteStorage-0.4.2.js'], function(remoteStorage) {
+      require(['./remoteStorage-0.4.4'], function(remoteStorage) {
         var storageInfo = JSON.parse(decodeURIComponent(gup('storageInfo')));
         window.opener.postMessage('conn:'+JSON.stringify({
           storageInfo: storageInfo,

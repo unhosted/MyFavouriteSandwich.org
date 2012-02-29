@@ -2,9 +2,9 @@
   <head>
     <title>Closing dialog...</title>
     <meta charset="utf-8">
-    <script src="http://unhosted.org/require.js"></script>
+    <script src="./unhosted/require.js"></script>
     <script>
-      require(['http://unhosted.org/remoteStorage-0.4.2.js'], function(remoteStorage) {
+      require(['./unhosted/remoteStorage-0.4.4'], function(remoteStorage) {
         window.opener.postMessage(remoteStorage.receiveToken(), location.protocol+'//'+location.host);
         window.close();
       });
