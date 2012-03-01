@@ -28,10 +28,9 @@
           document.getElementById('loggedIn').style.display='block';
           document.getElementById('loggedInUser').innerHTML=
             '<span>Logged in as <strong>'
-            +localStorage.getItem('userAddress')
+            +syncer.getUserAddress()
             +'</strong> [<a id="logout">Logout</a>]</span>';
           document.getElementById('logout').onclick= function() {
-            delete localStorage.userAddress;
             syncer.disconnect();
           }
         } else {
@@ -39,7 +38,6 @@
           document.getElementById('loggedIn').style.display='none';
           document.getElementById('login').onclick = function() {
             //sync localStorage keys that start with 'sandwiches:'
-            localStorage.userAddress = document.getElementById('userAddress').value;
             syncer.connect(document.getElementById('userAddress').value, ['sandwiches'], syncer.startSync);
           };
         }

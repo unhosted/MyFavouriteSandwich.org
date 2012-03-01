@@ -1,4 +1,4 @@
-define(['./ajax.js'], function(ajax) {
+define(['./ajax'], function(ajax) {
     function normalizeKey(key) {
       var i = 0;
       while(i < key.length && key[i] =='u') {
@@ -18,7 +18,8 @@ define(['./ajax.js'], function(ajax) {
         },
         success: function(data) {
           cb(null, data);
-        }
+        },
+        timeout: 3000
       };
       if(token) {
         ajaxObj.headers= {Authorization: 'Bearer '+token};
