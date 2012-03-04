@@ -15,7 +15,7 @@
           return results[1];
         }
       }
-      require(['./remoteStorage-0.4.4'], function(remoteStorage) {
+      require(['./remoteStorage-0.4.5'], function(remoteStorage) {
         var storageInfo = JSON.parse(decodeURIComponent(gup('storageInfo')));
         window.opener.postMessage('conn:'+JSON.stringify({
           storageInfo: storageInfo,
