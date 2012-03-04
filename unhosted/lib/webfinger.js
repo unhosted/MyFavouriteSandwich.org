@@ -58,12 +58,7 @@ define(['./ajax'], function(ajax) {
     if(options.allowFakefinger) {
       //console.log('Trying Fakefinger');
       ajax.ajax({
-        url: 'http://useraddress.net/fakefinger',
-        method: 'POST',
-        data: JSON.stringify({
-          audience: location.protocol+'//'+location.host,
-          userAddress: userAddress
-        }),
+        url: 'http://proxy.unhosted.org/?q='+encodeURIComponent('acct:'+userAddress),
         success: function(data) {
           cb(JSON.parse(data));
         },
