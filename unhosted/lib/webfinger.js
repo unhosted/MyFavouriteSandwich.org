@@ -55,24 +55,6 @@ define(['./ajax'], function(ajax) {
   }
 
   function afterHttpHostmetaError(error, cb) {
-    if(options.allowSingleOriginWebfinger) {
-      //console.log('Trying single origin webfinger through proxy');
-      ajax.ajax({
-        url: 'http://yourremotestorage.net/CouchDB/proxy/'+host+'/.well-known/host-meta',
-        success: function(data) {
-          afterHostmetaSuccess(data, error, cb);
-        },
-        error: function(err) {
-          afterProxyError(error, cb);
-        },
-        timeout: 3000
-      });
-    } else {
-      afterProxyError(error, cb);
-    }
-  }
-    
-  function afterProxyError(error, cb) {
     if(options.allowFakefinger) {
       //console.log('Trying Fakefinger');
       ajax.ajax({
