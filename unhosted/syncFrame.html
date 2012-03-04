@@ -35,7 +35,7 @@
       }
       function init(setStorageInfo, setCategories, setToken, setIndexKey, cb) {
         indexKey = setIndexKey;
-        require(['http://unhosted.org/remoteStorage-0.4.5.js'], function(remoteStorage) {
+        require(['./remoteStorage-0.4.5'], function(remoteStorage) {
           for(var i in setCategories) {
             clients[setCategories[i]] = remoteStorage.createClient(setStorageInfo, setCategories[i], setToken);
           }
