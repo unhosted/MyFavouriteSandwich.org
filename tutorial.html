@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <script src="http://unhosted.org/require.js"></script>
     <script>
-      require(['./unhosted/remoteStorage-0.4.4'], function(remoteStorage) {
+      require(['./unhosted/remoteStorage-0.4.5'], function(remoteStorage) {
 
         document.getElementById('connectButton').onclick = function() {
           localStorage.userAddress=document.getElementById('userAddress').value;
@@ -94,6 +94,7 @@
     <input type="submit" value="Upload foo doc" id="uploadFooDocButton">
     <input type="submit" value="Publish foo doc" id="publishFooDocButton">
     <input type="submit" value="Get public foo" id="getPublicFooButton">
-    <p><strong>Please note:</strong> We're having some trouble with the BrowserID-based OAuth on Iris Couch. That means you cannot actually use this page right now if you got your remoteStorage account through Libre Docs. We are working to fix this soon, sorry!</p>
+    <p><strong>Please note:</strong> We're still working on all of this, if you have any trouble, please come to <a href="http://webchat.freenode.net/?channels=unhosted">the #unhosted chatroom</a> on freenode.
+    </p>
   </body>
 </html>

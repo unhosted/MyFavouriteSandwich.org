@@ -15,7 +15,7 @@
           return results[1];
         }
       }
-      require(['http://unhosted.org/remoteStorage-0.4.2.js'], function(remoteStorage) {
+      require(['./unhosted/remoteStorage-0.4.5.js'], function(remoteStorage) {
         var storageInfo = JSON.parse(decodeURIComponent(gup('storageInfo')));
         window.opener.postMessage('conn:'+JSON.stringify({
           storageInfo: storageInfo,
