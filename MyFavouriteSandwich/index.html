@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="general.css" />
 <link rel="stylesheet" href="css/uncompressed/layout.css" />
 
-    <script src="/unhosted/require.js"></script>
+    <script src="/unhosted/syncer.js"></script>
     <script> 
     function onload () {
       //handle changes coming in from other tabs - and other devices!
@@ -21,31 +21,28 @@
         };
       }, false);
 
-      require(['/unhosted/remoteStorage-0.5.1.js'], function(remoteStorage) {
-        //display connection status and connect/disconnect button:
-        remoteStorage.onReadyStateChange(function(connected, online, ready) {
-          if(connected) {
-            document.getElementById('loginScreen').style.display='none';
-            document.getElementById('loggedIn').style.display='block';
-            document.getElementById('loggedInUser').innerHTML=
-              '<span>Logged in as <strong>'
-              +localStorage.getItem('userAddress')
-              +'</strong> [<a id="logout">Logout</a>]</span>';
-            document.getElementById('logout').onclick= function() {
-              delete localStorage.userAddress;
-              remoteStorage.disconnect();
-            }
-          } else {
-            document.getElementById('loginScreen').style.display='block';
-            document.getElementById('loggedIn').style.display='none';
-            document.getElementById('login').onclick = function() {
-              //sync localStorage keys that start with 'sandwiches:'
-              localStorage.userAddress = document.getElementById('userAddress').value;
-              remoteStorage.sync(document.getElementById('userAddress').value, ['sandwiches']);
-            };
+      //display connection status and connect/disconnect button:
+      syncer.onReadyStateChange(function(connected, online, ready) {
+        if(connected) {
+          document.getElementById('loginScreen').style.display='none';
+          document.getElementById('loggedIn').style.display='block';
+          document.getElementById('loggedInUser').innerHTML=
+            '<span>Logged in as <strong>'
+            +syncer.getUserAddress()
+            +'</strong> [<a id="logout">Logout</a>]</span>';
+          document.getElementById('logout').onclick= function() {
+            syncer.disconnect();
           }
-        });
+        } else {
+          document.getElementById('loginScreen').style.display='block';
+          document.getElementById('loggedIn').style.display='none';
+          document.getElementById('login').onclick = function() {
+            //sync localStorage keys that start with 'sandwiches:'
+            syncer.connect(document.getElementById('userAddress').value, ['sandwiches'], syncer.startSync);
+          };
+        }
       });
+      syncer.onLoad();
     }
     </script>
 <script>
@@ -87,13 +84,13 @@ function saveFavSandwich(ingredients) {
 
 				<header>
 			<h1>My Favourite Sandwich</h1>
-			<p>Login with my unhosted account</p>
+			<p>Login with my remoteStorage account</p>
 			<input id="userAddress" onfocus="if(this.value=='user@provider.org'){this.className='formfocus'; this.value=''}" onblur="if(!this.value){this.className='formblur'; this.value='user@provider.org'}" type="text" value="user@provider.org"/>
 			<input class="submit" id="login" type="submit" value="Submit!" >
 		</header>
 			
 		<div id="register">
-			<p><strong>Don't have an unhosted account? </strong> Register here:</p>
+			<p><strong>Don't have a remoteStorage account? </strong> Register here:</p>
 			<input id="provider" name="unhostedacct" type="text" value="iriscouch.com"/>
 			<input class="submit" name="submit" type="submit" value="Create account" onclick="alert('Go to LibreDocs.org and sign up there for your IrisCouch account');">
 		</div>
@@ -136,8 +133,8 @@ function saveFavSandwich(ingredients) {
 		<div id="leftcolumn">
 			<h3>So... what is this all about?</h3>
 			<p>
-				This is a fictional site that demonstrates the unhosted architecture, a tutorial, so you can take a look at the code to understand how unhosted web apps work. View the application source code <a href="http://github.com/michiel-unhosted/myfavouritesandwich/blob/master/index.html" target="_blank">here</a>. The popup that handles the <a href="http://webfinger.org" target="_blank">WebFinger</a> is <a href="http://github.com/michiel-unhosted/myfavouritesandwich/blob/master/popup.html" target="_blank">here</a>, and  <a href="http://github.com/michiel-unhosted/myfavouritesandwich/blob/master/cb.html" target="_blank">here</a> is the <a href="http://code.google.com/apis/accounts/docs/OAuth2.html#CS" target="_blank">OAuth2-cs</a> callback.
-			</p>
+				This is a fictional site that demonstrates the unhosted architecture, a tutorial, so you can take a look at the code to understand how unhosted web apps work. Download the <a href="/MyFavouriteSandwich.tar.gz">tar ball</a> or view the <a href="http://github.com/unhosted/MyFavouriteSandwich.org/blob/master/index.html" target="_blank">application source code</a>.
+      </p>
 			<p>
 				<strong>myfavouritesandwich.org is not a commercial website, nor is it affiliated with any trademark</strong>
 			</p>
@@ -151,7 +148,7 @@ function saveFavSandwich(ingredients) {
 				An unhosted web app is only source code. Dynamic data is encrypted and decentralised, to per-user storage nodes. This benefits <strong>free software</strong>, as well as <strong>scalability</strong>, <strong>robustness</strong>, and <strong>online privacy</strong>.
 			</p>
 			<p>
-				<strong>Check it out at <a href="http://www.unhosted.org">http://www.unhosted.org/</a></strong>
+				<strong>Check it out at <a href="http://unhosted.org">unhosted.org</a></strong>
 			</p>
 		</div>
 		<div class="clear">
