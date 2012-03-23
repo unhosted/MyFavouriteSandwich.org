@@ -22,8 +22,8 @@
       }, false);
 
       //display connection status and connect/disconnect button:
-      syncer.onReadyStateChange(function(connected, online, ready) {
-        if(connected) {
+      syncer.onReadyStateChange(function(obj) {
+        if(obj.connected) {
           document.getElementById('loginScreen').style.display='none';
           document.getElementById('loggedIn').style.display='block';
           document.getElementById('loggedInUser').innerHTML=
@@ -42,7 +42,6 @@
           };
         }
       });
-      syncer.onLoad();
     }
     </script>
 <script>

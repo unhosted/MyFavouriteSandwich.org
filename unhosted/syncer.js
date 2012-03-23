@@ -1,4 +1,8 @@
 var syncer = (function() {
+  var clients = {};
+  var indexCache = {};
+  var indexKey;
+  var orsc=function(obj){console.log('ready state changed to:');console.log(obj);};
   //localStorage keys used by this lib:
   //_unhosted$userAddress
   //_unhosted$categories
@@ -53,9 +57,6 @@ var syncer = (function() {
   function disconnect() {
     localStorage.clear();
   }
-      var clients = {};
-      var indexCache = {};
-      var indexKey;
       function getLocalIndex(category) {
         if(indexCache[category]) {//this is necessary because localStorage contents is not updated instantly on write
           return indexCache[category];
@@ -186,12 +187,23 @@ var syncer = (function() {
       });
     });
   }
+  function onReadyStateChange(cb) {
+    orsc=cb;
+    orsc({
+      status: 'clear'
+    });
+  }
+  function getUserAddress() {
+    return 'bla';
+  }
   onLoad();
   return {
-    connect    : connect,//(userAddress, categories, pushInterval=6, pullInterval=60, dialog='/unhosted/dialog.html'), also forces a first pull & push and starts timers
-    disconnect : disconnect,//(), also forces a last push and stops timers
-    push       : push,//() for instance when the user hits explicitly 'go offline'
-    pull       : pull//() for instance when the user hits explicitly 'refresh view'
+    connect            : connect,//(userAddress, categories, pushInterval=6, pullInterval=60, dialog='/unhosted/dialog.html'), also forces a first pull & push and starts timers
+    disconnect         : disconnect,//(), also forces a last push and stops timers
+    push               : push,//() for instance when the user hits explicitly 'go offline'
+    pull               : pull,//() for instance when the user hits explicitly 'refresh view'
+    onReadyStateChange : onReadyStateChange,
+    getUserAddress     : getUserAddress
   };
   //to catch the sync state, look for frame messages starting with '_unhosted:'
 })();
