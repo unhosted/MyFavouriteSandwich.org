@@ -1,5 +1,4 @@
 var syncer = (function() {
-  var clients = {};
   var indexCache = {};
   var indexKey;
   var orsc=function(obj){console.log('ready state changed to:');console.log(obj);};
@@ -97,74 +96,76 @@ var syncer = (function() {
         indexCache[category][key] = new Date().getTime();
         localStorage[indexKey+'_index_'+category] = JSON.stringify(indexCache[category]);
       }
-      function init(setStorageInfo, setCategories, setToken, setIndexKey, cb) {
-        indexKey = setIndexKey;
-        require(['./remoteStorage-0.4.5'], function(remoteStorage) {
-          for(var i in setCategories) {
-            clients[setCategories[i]] = remoteStorage.createClient(setStorageInfo, setCategories[i], setToken);
+  function pull(cb) {
+    console.log('pull');
+    var categories, storageInfo, bearerToken;
+    try {
+      categories=JSON.parse(localStorage['_unhosted$categories']);
+      storageInfo=JSON.parse(localStorage['_unhosted$storageInfo']);
+      bearerToken=localStorage['_unhosted$bearerToken'];
+    } catch(e) {
+    }
+    if(categories && storageInfo && bearerToken) {
+      for(var i=0; i<categories.length; i++) {
+        var client=remoteStorage.createClient(storageInfo, categories[i], bearerToken);
+        client.get(indexKey, function(err, data) {
+          if((!err) && data) {
+            var remoteIndex = JSON.parse(data);
+            var localIndex = getLocalIndex(category);
+            JSON.parse(localStorage[clients[category]+'$'+indexKey]);
+            var key;
+            for(key in remoteIndex) {
+              if(!localIndex[key] || localIndex[key] < remoteIndex[key]) {
+                client.get(key, function(err, data) {
+                  updateLocalIndex(category, key);
+                  localStorage[category+'$'+key] = data;
+                });
+              }
+            }
+            var putIndex = false;
+            for(key in localIndex) {
+              if(!remoteIndex[key] || remoteIndex[key] < localIndex[key]) {
+                putIndex = true;
+                client.put(key, localStorage[category+'$'+key], function(err, data) {
+                });
+              }
+            }
+            //todo: deal with upload failures
+            client.put(indexKey, JSON.stringify(localIndex), function(err, data) {
+            });
           }
-          sync(cb);
         });
       }
-      function sync(cb) {
-        for(var category in clients) {
-          clients[category].get(indexKey, function(err, data) {
-            if((!err) && data) {
-              var remoteIndex = JSON.parse(data);
-              var localIndex = getLocalIndex(category);
-              JSON.parse(localStorage[clients[category]+'$'+indexKey]);
-              var key;
-              for(key in remoteIndex) {
-                if(!localIndex[key] || localIndex[key] < remoteIndex[key]) {
-                  clients[category].get(key, function(err, data) {
-                    updateLocalIndex(category, key);
-                    localStorage[category+'$'+key] = data;
-                  });
-                }
-              }
-              var putIndex = false;
-              for(key in localIndex) {
-                if(!remoteIndex[key] || remoteIndex[key] < localIndex[key]) {
-                  putIndex = true;
-                  clients[category].put(key, localStorage[category+'$'+key], function(err, data) {
-                  });
-                }
-              }
-              //todo: deal with upload failures
-              clients[category].put(indexKey, JSON.stringify(localIndex), function(err, data) {
-              });
-            }
-          });
-        }
-        cb();//not really finished here yet actually
-      }
-      function push(e, cb) {
-        if(!e.key) {//this happens on localStorage.clear()
-          return;
-        }
-        var parts = e.key.split('$');
-        if(parts.length != 2) {
-          return;
-        }
+    }
+    cb();//not really finished here yet actually
+  }
+  function push(cb) {
+    console.log('push');
+    for(var i=0;i<localStorage.length;i++) {
+      var parts = localStorage.key(i).split('$');
+      if(parts.length == 2 && parts[0] != '_unhosted') {
         var index = updateLocalIndex(parts[0], parts[1]);
-        if(clients[parts[0]]) {
-          clients[parts[0]].put(indexKey, JSON.stringify(getLocalIndex(parts[0])), function(err, data) {
-            clients[parts[0]].put(parts[1], e.newValue, function(err, data) {
-              cb();
+        var storageInfo, bearerToken;
+        try {
+          storageInfo=JSON.parse(localStorage['_unhosted$storageInfo']);
+          bearerToken=localStorage['_unhosted$bearerToken'];
+        } catch(e) {
+        }
+        if(storageInfo && bearerToken) {
+          var client = remoteStorage.createClient(storageInfo, parts[0], bearerToken);
+          client.put(indexKey, JSON.stringify(getLocalIndex(parts[0])), function(err, data) {
+            client.put(parts[1], e.newValue, function(err, data) {
             });
           });
         }
       }
-  function pull() {
-    console.log('pull');
-  }
-  function push() {
-    console.log('push');
+    }
+    cb();//not really finished here yet actually
   }
   function maybePull(now, cb) {
     if(localStorage['_unhosted$pullInterval']) {
       if(!localStorage['_unhosted$lastPullStartTime'] //never pulled yet
-        || localStorage['_unhosted$lastPullStartTime'] + localStorage['_unhosted$pullInterval'] < now) {//time to pull
+        || parseInt(localStorage['_unhosted$lastPullStartTime']) + localStorage['_unhosted$pullInterval']*1000 < now) {//time to pull
         localStorage['_unhosted$lastPullStartTime']=now;
         pull(cb);
       } else {
@@ -177,9 +178,9 @@ var syncer = (function() {
   function maybePush(now, cb) {
     if(localStorage['_unhosted$pushInterval']) {
       if(!localStorage['_unhosted$lastPushStartTime'] //never pushed yet
-        || localStorage['_unhosted$lastPushStartTime'] + localStorage['_unhosted$pushInterval'] < now) {//time to push
+        || parseInt(localStorage['_unhosted$lastPushStartTime']) + localStorage['_unhosted$pushInterval']*1000 < now) {//time to push
         localStorage['_unhosted$lastPushStartTime']=now;
-        push();
+        push(cb);
       } else {
         cb();
       }
@@ -188,9 +189,13 @@ var syncer = (function() {
     }
   }
   function onLoad() {
-    if(localStorage['_unhosted$pushInterval']) {
-      setInterval(work, localStorage['_unhosted$pushInterval']*1000);
-    }
+    require(['./unhosted/remoteStorage'], function(drop) {
+      remoteStorage=drop;
+      if(localStorage['_unhosted$pushInterval']) {
+        work();
+        setInterval(work, localStorage['_unhosted$pushInterval']*1000);
+      }
+    });
   }
   function work() {
     var now = new Date().getTime();
@@ -207,7 +212,7 @@ var syncer = (function() {
     });
   }
   function getUserAddress() {
-    return 'bla';
+    return localStorage['_unhosted$userAddress'];
   }
   onLoad();
   return {
