@@ -154,7 +154,7 @@ var syncer = (function() {
         if(storageInfo && bearerToken) {
           var client = remoteStorage.createClient(storageInfo, parts[0], bearerToken);
           client.put(indexKey, JSON.stringify(getLocalIndex(parts[0])), function(err, data) {
-            client.put(parts[1], e.newValue, function(err, data) {
+            client.put(parts[1], localStorage[parts.join('$')], function(err, data) {
             });
           });
         }
