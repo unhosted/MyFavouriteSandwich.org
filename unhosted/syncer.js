@@ -22,8 +22,7 @@ var syncer = (function() {
   //_unhosted$index:[category]
 
   function connect(userAddress, categories, pushInterval, pullInterval, dialogPath) {
-    var userAddress=localStorage['_unhosted$userAddress'];
-    if(userAddress) {
+    if(localStorage['_unhosted$bearerToken']) {
       console.log('err: already connected');
       return;
     }
@@ -49,6 +48,13 @@ var syncer = (function() {
       if(event.key=='_unhosted$bearerToken' && event.newValue) {
         if(pushInterval) {
           setInterval(work, pushInterval);//will first trigger a pull if it's time for that
+        }
+      }
+      if(event.key=='_unhosted$dialogResult' && event.newValue) {
+        try {
+          console.log(JSON.parse(event.newValue));
+        } catch(e) {
+          console.log('unparseable dialog result');
         }
       }
     }, false);
@@ -177,7 +183,7 @@ var syncer = (function() {
   }
   function onLoad() {
     if(localStorage['_unhosted$pushInterval']) {
-      setInterval(work, pushIntervalocalStorage['_unhosted$pushInterval']);
+      setInterval(work, localStorage['_unhosted$pushInterval']);
     }
   }
   function work() {
