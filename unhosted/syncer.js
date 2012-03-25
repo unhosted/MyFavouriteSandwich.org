@@ -65,6 +65,9 @@ var syncer = (function() {
   }
   function disconnect() {
     localStorage.clear();
+    orsc({
+      connected: false
+    });
   }
       function getLocalIndex(category) {
         if(indexCache[category]) {//this is necessary because localStorage contents is not updated instantly on write
@@ -200,7 +203,7 @@ var syncer = (function() {
   function onReadyStateChange(cb) {
     orsc=cb;
     orsc({
-      status: 'clear'
+      connected: (localStorage['_unhosted$bearerToken'] != null)
     });
   }
   function getUserAddress() {
