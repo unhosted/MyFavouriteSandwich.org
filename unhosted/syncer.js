@@ -47,8 +47,11 @@ var syncer = (function() {
     window.addEventListener('storage', function(event) {
       if(event.key=='_unhosted$bearerToken' && event.newValue) {
         if(pushInterval) {
-          setInterval(work, pushInterval);//will first trigger a pull if it's time for that
+          setInterval(work, pushInterval*1000);//will first trigger a pull if it's time for that
         }
+        orsc({
+          connected: true
+        });
       }
       if(event.key=='_unhosted$dialogResult' && event.newValue) {
         try {
@@ -183,11 +186,12 @@ var syncer = (function() {
   }
   function onLoad() {
     if(localStorage['_unhosted$pushInterval']) {
-      setInterval(work, localStorage['_unhosted$pushInterval']);
+      setInterval(work, localStorage['_unhosted$pushInterval']*1000);
     }
   }
   function work() {
     var now = new Date().getTime();
+    console.log(now);
     maybePull(now, function() {
       maybePush(now, function() {
       });
