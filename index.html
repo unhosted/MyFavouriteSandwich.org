@@ -86,8 +86,8 @@ function saveFavSandwich(ingredients) {
     <header>
       <h1>My Favourite Sandwich</h1>
       <p>Login with my remoteStorage account</p>
-      <input id="userAddress" onfocus="if(this.value=='user@provider.org'){this.className='formfocus'; this.value=''}" onblur="if(!this.value){this.className='formblur'; this.value='user@provider.org'}" type="text" value="user@provider.org"/>
-      <input class="submit" id="login" type="submit" value="Submit!" >
+      <input id="userAddress" placeholder="user@server" autofocus style="margin:4em 0 .5em; width:9.35em; padding-right:6em; height:2.5em; padding-left:3em; background:url('../unhosted/remoteStorage-icon.png') no-repeat .3em center" >
+      <input class="submit" id="login" type="submit" value="connect" >
     </header>
     <div id="register">
       <p><strong>Don't have a remoteStorage account? </strong> Register at <a href="https://5apps.com">5apps</a> or <a href="https://owncube.com">OwnCube</a>.</p>
