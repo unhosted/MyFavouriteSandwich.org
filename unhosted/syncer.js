@@ -164,7 +164,6 @@ var syncer = (function() {
     }
   }
   function pull(cb) {//gathers settings and calls pullCategories
-    console.log('pull');
     var categories, storageInfo, bearerToken;
     try {
       categories=JSON.parse(localStorage['_unhosted$categories']);
@@ -262,10 +261,14 @@ var syncer = (function() {
       }
     }
   }
+  function getItem(category, key, cb) {
+    cb(null, localStorage[category+'$'+key]);
+  }
   onLoad();
   return {
     connect            : connect,//(userAddress, categories, pullInterval=60, dialog='/unhosted/dialog.html'), also forces a first pull & push and starts timers
     disconnect         : disconnect,//(), also forces a last push and stops timers
+    getItem            : getItem,//() for instance when the user explicitly hits 'go offline'
     setItem            : setItem,//() for instance when the user explicitly hits 'go offline'
     pull               : pull,//() for instance when the user explicitly hits 'refresh view'
     onReadyStateChange : onReadyStateChange,
