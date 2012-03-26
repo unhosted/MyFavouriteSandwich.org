@@ -51,7 +51,7 @@
           document.getElementById('loggedIn').style.display='none';
           document.getElementById('loginScreen').style.display='block';
           document.getElementById('login').onclick = function() {
-            syncer.connect(document.getElementById('userAddress').value, ['sandwiches']);
+            syncer.connect(document.getElementById('userAddress').value, ['sandwiches'], 10);
           };
         }
         retrieveFavSandwich();

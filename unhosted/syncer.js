@@ -1,14 +1,18 @@
 var syncer = (function() {
   var indexCache = {};
   var indexKey;
-  var orsc=function(obj){console.log('ready state changed to:');console.log(obj);};
+  var readyState={};
+  orsc=function(obj){console.log('ready state changed to:');console.log(obj);};
+  function changeReadyState(field, value) {
+    readyState[field]=value;
+    orsc(readyState);
+  }
   //localStorage keys used by this lib:
   //_unhosted$userAddress
   //_unhosted$categories
   //_unhosted$storageInfo
   //_unhosted$bearerToken
   
-  //_unhosted$pushInterval
   //_unhosted$pullInterval
   
   //_unhosted$lastPushStartTime
@@ -20,7 +24,7 @@ var syncer = (function() {
   //for each [category]:
   //_unhosted$index:[category]
 
-  function connect(userAddress, categories, pushInterval, pullInterval, dialogPath) {
+  function connect(userAddress, categories, pullInterval, dialogPath) {
     if(localStorage['_unhosted$bearerToken']) {
       console.log('err: already connected');
       return;
@@ -31,26 +35,16 @@ var syncer = (function() {
     if(typeof(pullInterval) === 'undefined') {
       pullInterval = 60;
     }
-    if(typeof(pushInterval) === 'undefined') {
-      pushInterval = 6;
-    }
-    if(pullInterval<pushInterval) {
-      console.log('err: pullInterval should be greater than or equal to pushInterval. Set both to 0 to disable timed sync altogether');
-      return;
-    }
     localStorage['_unhosted$userAddress'] = userAddress;
     localStorage['_unhosted$categories'] = JSON.stringify(categories);
-    localStorage['_unhosted$pushInterval'] = pushInterval;
     localStorage['_unhosted$pullInterval'] = pullInterval;
     window.open(dialogPath);
     window.addEventListener('storage', function(event) {
       if(event.key=='_unhosted$bearerToken' && event.newValue) {
-        if(pushInterval) {
-          setInterval(work, pushInterval*1000);//will first trigger a pull if it's time for that
+        if(pullInterval) {
+          setInterval(work, pullInterval*1000);//will first trigger a pull if it's time for that
         }
-        orsc({
-          connected: true
-        });
+        changeReadyState('connected', true);
       }
       if(event.key=='_unhosted$dialogResult' && event.newValue) {
         try {
@@ -64,9 +58,7 @@ var syncer = (function() {
   }
   function disconnect() {
     localStorage.clear();
-    orsc({
-      connected: false
-    });
+    changeReadyState('connected', false);
   }
   function parseObj(str) {
     var obj;
@@ -175,6 +167,23 @@ var syncer = (function() {
       pullCategories(storageInfo, categories, bearerToken, cb);
     }
   }
+  function maybePull(now, cb) {
+    if(localStorage['_unhosted$pullInterval']) {
+      if(!localStorage['_unhosted$lastPullStartTime'] //never pulled yet
+        || parseInt(localStorage['_unhosted$lastPullStartTime']) + localStorage['_unhosted$pullInterval']*1000 < now) {//time to pull
+        localStorage['_unhosted$lastPullStartTime']=now;
+        changeReadyState('pulling', true);
+        pull(function() {
+          changeReadyState('pulling', false);
+          cb();
+        });
+      } else {
+        cb();
+      }
+    } else {
+      cb();
+    }
+  }
   function pushItem(category, key, timestamp, indexStr, valueStr, cb) {
     console.log('push '+category+'$'+valueStr);
     if(category != '_unhosted') {
@@ -194,19 +203,6 @@ var syncer = (function() {
     }
     cb();//not really finished here yet actually
   }
-  function maybePull(now, cb) {
-    if(localStorage['_unhosted$pullInterval']) {
-      if(!localStorage['_unhosted$lastPullStartTime'] //never pulled yet
-        || parseInt(localStorage['_unhosted$lastPullStartTime']) + localStorage['_unhosted$pullInterval']*1000 < now) {//time to pull
-        localStorage['_unhosted$lastPullStartTime']=now;
-        pull(cb);
-      } else {
-        cb();
-      }
-    } else {
-      cb();
-    }
-  }
   function onLoad() {
     require(['./unhosted/remoteStorage'], function(drop) {
       remoteStorage=drop;
@@ -224,9 +220,7 @@ var syncer = (function() {
   }
   function onReadyStateChange(cb) {
     orsc=cb;
-    orsc({
-      connected: (localStorage['_unhosted$bearerToken'] != null)
-    });
+    changeReadyState('connected', (localStorage['_unhosted$bearerToken'] != null));
   }
   function getUserAddress() {
     return localStorage['_unhosted$userAddress'];
