@@ -68,34 +68,34 @@ var syncer = (function() {
       connected: false
     });
   }
-      function getLocalIndex(category) {
-        if(indexCache[category]) {//this is necessary because localStorage contents is not updated instantly on write
-          return indexCache[category];
-        }
-        var str = localStorage[indexKey+'_index_'+category];
-        if(str) {
-          try {
-            indexCache[category] = JSON.parse(str);
-            return indexCache[category];
-          } catch (e) {
-          }
-        }
-        //build up index from scratch:
-        indexCache[category] = {};
-        for(var i = 0; i < localStorage.length; i++) {
-          var keyParts = localStorage.key(i).split('$');
-          if(keyParts.length == 2 && keyParts[0] == category) {
-            indexCache[category][keyParts[1]] = 0;
-          }
-        }
-        localStorage[indexKey+'_index_'+category] = JSON.stringify(indexCache[category]);
+  function getLocalIndex(category) {
+    if(indexCache[category]) {//this is necessary because localStorage contents is not updated instantly on write
+      return indexCache[category];
+    }
+    var str = localStorage[indexKey+'_index_'+category];
+    if(str) {
+      try {
+        indexCache[category] = JSON.parse(str);
         return indexCache[category];
+      } catch (e) {
       }
-      function updateLocalIndex(category, key) {
-        getLocalIndex(category);//prime indexCache
-        indexCache[category][key] = new Date().getTime();
-        localStorage[indexKey+'_index_'+category] = JSON.stringify(indexCache[category]);
+    }
+    //build up index from scratch:
+    indexCache[category] = {};
+    for(var i = 0; i < localStorage.length; i++) {
+      var keyParts = localStorage.key(i).split('$');
+      if(keyParts.length == 2 && keyParts[0] == category) {
+        indexCache[category][keyParts[1]] = 0;
       }
+    }
+    localStorage[indexKey+'_index_'+category] = JSON.stringify(indexCache[category]);
+    return indexCache[category];
+  }
+  function updateLocalIndex(category, key) {
+    getLocalIndex(category);//prime indexCache
+    indexCache[category][key] = new Date().getTime();
+    localStorage[indexKey+'_index_'+category] = JSON.stringify(indexCache[category]);
+  }
   function pull(cb) {
     console.log('pull');
     var categories, storageInfo, bearerToken;
@@ -139,25 +139,22 @@ var syncer = (function() {
     }
     cb();//not really finished here yet actually
   }
-  function push(cb) {
-    console.log('push');
-    for(var i=0;i<localStorage.length;i++) {
-      var parts = localStorage.key(i).split('$');
-      if(parts.length == 2 && parts[0] != '_unhosted') {
-        var index = updateLocalIndex(parts[0], parts[1]);
-        var storageInfo, bearerToken;
-        try {
-          storageInfo=JSON.parse(localStorage['_unhosted$storageInfo']);
-          bearerToken=localStorage['_unhosted$bearerToken'];
-        } catch(e) {
-        }
-        if(storageInfo && bearerToken) {
-          var client = remoteStorage.createClient(storageInfo, parts[0], bearerToken);
-          client.put(indexKey, JSON.stringify(getLocalIndex(parts[0])), function(err, data) {
-            client.put(parts[1], localStorage[parts.join('$')], function(err, data) {
-            });
+  function push(category, item, cb) {
+    console.log('push '+category+'$'+item);
+    if(category != '_unhosted') {
+      var index = updateLocalIndex(category, item);
+      var storageInfo, bearerToken;
+      try {
+        storageInfo=JSON.parse(localStorage['_unhosted$storageInfo']);
+        bearerToken=localStorage['_unhosted$bearerToken'];
+      } catch(e) {
+      }
+      if(storageInfo && bearerToken) {
+        var client = remoteStorage.createClient(storageInfo, category, bearerToken);
+        client.put(indexKey, JSON.stringify(getLocalIndex(category)), function(err, data) {
+          client.put(item, localStorage[category+'$'+item], function(err, data) {
           });
-        }
+        });
       }
     }
     cb();//not really finished here yet actually
@@ -168,19 +165,6 @@ var syncer = (function() {
         || parseInt(localStorage['_unhosted$lastPullStartTime']) + localStorage['_unhosted$pullInterval']*1000 < now) {//time to pull
         localStorage['_unhosted$lastPullStartTime']=now;
         pull(cb);
-      } else {
-        cb();
-      }
-    } else {
-      cb();
-    }
-  }
-  function maybePush(now, cb) {
-    if(localStorage['_unhosted$pushInterval']) {
-      if(!localStorage['_unhosted$lastPushStartTime'] //never pushed yet
-        || parseInt(localStorage['_unhosted$lastPushStartTime']) + localStorage['_unhosted$pushInterval']*1000 < now) {//time to push
-        localStorage['_unhosted$lastPushStartTime']=now;
-        push(cb);
       } else {
         cb();
       }
@@ -199,10 +183,7 @@ var syncer = (function() {
   }
   function work() {
     var now = new Date().getTime();
-    console.log(now);
     maybePull(now, function() {
-      maybePush(now, function() {
-      });
     });
   }
   function onReadyStateChange(cb) {
@@ -214,14 +195,46 @@ var syncer = (function() {
   function getUserAddress() {
     return localStorage['_unhosted$userAddress'];
   }
+  function setItem(category, item, value, cb) {
+    localStorage[category+'$'+item]=value;
+    pushItem(category, item, cb);
+  }
   onLoad();
   return {
-    connect            : connect,//(userAddress, categories, pushInterval=6, pullInterval=60, dialog='/unhosted/dialog.html'), also forces a first pull & push and starts timers
+    connect            : connect,//(userAddress, categories, pullInterval=60, dialog='/unhosted/dialog.html'), also forces a first pull & push and starts timers
     disconnect         : disconnect,//(), also forces a last push and stops timers
-    push               : push,//() for instance when the user hits explicitly 'go offline'
-    pull               : pull,//() for instance when the user hits explicitly 'refresh view'
+    setItem            : setItem,//() for instance when the user explicitly hits 'go offline'
+    pull               : pull,//() for instance when the user explicitly hits 'refresh view'
     onReadyStateChange : onReadyStateChange,
     getUserAddress     : getUserAddress
   };
   //to catch the sync state, look for frame messages starting with '_unhosted:'
 })();
+
+// remote data structure:
+// index
+// favSandwich:timestamp
+// 
+
+// we can't tell when a key has changed, and don't want to keep sha's of them. so the user should connect(), disconnect(), and then
+// getItem, setItem, removeItem, length, key on remoteStorage instead of on localStorage
+// fixItem to make sure it never gets expulsed from cache and is always prefetched.
+// or fetchItems and then synchronous getItem
+// adn then flushItems.
+//
+// or have localStorage, synced, and remote.
+// connect userAddress, pullInterval, scopes, cb(err) will load cache according to cache list
+// disconnect cb(err) will remove cache and flush through any pending writes.
+// 
+// getItem key, cb //adds the item to the cache and to the cache list.
+// setItem key, value, cb(err) //cache with writethrough
+// removeItem key, value, cb(err) //remove from remote and, if present, also from cache
+//
+// length - will give the remote length
+// key - int -> key on remote
+// cached - int -> boolean
+//
+// flushItem category$item, cb(err) //remove only from cache and cache list
+// storeItem category$item, value, cb(err) only store remotely, don't add to cache or cache list
+// fetchItem [user@host/]category$item, cb(err, data)
+//

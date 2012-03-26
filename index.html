@@ -15,12 +15,22 @@
     <script src="/unhosted/require.js"></script>
     <script src="/unhosted/syncer.js"></script>
     <script> 
+    function getOrigin() {
+      return location.protocol+'//'+location.host;
+    }
     function onload () {
       //handle changes coming in from other tabs - and other devices!
-      window.addEventListener('storage', function(e) {
-        if(e.key == 'sandwiches$favSandwich') {
-          processFavSandwich(e.newValue);
-        };
+      window.addEventListener('message', function(msg) {
+        if(msg.origin == getOrigin() && msg.data.substring(0, '_unhosted:'.length) == '_unhosted:') {
+          var msgBody;
+          try {
+            msgBody = JSON.parse(msg.substring('_unhosted:'.length));
+          } catch(e) {
+          }
+          if(msgBody) {
+            processFavSandwich(msg.msgBody);
+          }
+        }
       }, false);
 
       //display connection status and connect/disconnect button:
@@ -41,8 +51,7 @@
           document.getElementById('loggedIn').style.display='none';
           document.getElementById('loginScreen').style.display='block';
           document.getElementById('login').onclick = function() {
-            //sync localStorage keys that start with 'sandwiches:'
-            syncer.connect(document.getElementById('userAddress').value, ['sandwiches'], syncer.startSync);
+            syncer.connect(document.getElementById('userAddress').value, ['sandwiches']);
           };
         }
       });
@@ -52,7 +61,13 @@
 
 //LOGGED IN:
 function retrieveFavSandwich() { 
-  processFavSandwich(localStorage['sandwiches$favSandwich']);
+  syncer.getItem('sandwiches', 'favSandwich', function(err, data) {
+    if(err) {
+      console.log(err);
+    } else {
+      processFavSandwich(data);
+    }
+  });
 }
 function processFavSandwich(text) {
   if(text) {
@@ -64,8 +79,9 @@ function processFavSandwich(text) {
   }
 }
 function saveFavSandwich(ingredients) {
-  localStorage['sandwiches$favSandwich'] = JSON.stringify({"ingredients":ingredients});
-  processFavSandwich(localStorage['sandwiches$favSandwich']);
+  var str = JSON.stringify({"ingredients":ingredients});
+  syncer.setItem('sandwiches', 'favSandwich', str);
+  processFavSandwich(str);
 }
 </script>
 </head>
