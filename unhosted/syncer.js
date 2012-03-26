@@ -68,35 +68,100 @@ var syncer = (function() {
       connected: false
     });
   }
-  function getLocalIndex(category) {
-    if(indexCache[category]) {//this is necessary because localStorage contents is not updated instantly on write
-      return indexCache[category];
+  function parseObj(str) {
+    try {
+      return JSON.parse(str);
+    } catch(e) {
+      return {};
     }
-    var str = localStorage[indexKey+'_index_'+category];
-    if(str) {
-      try {
-        indexCache[category] = JSON.parse(str);
-        return indexCache[category];
-      } catch (e) {
+  }
+  function iterate(index, itemCb, finishedCb, lastItem) {//helper function to async over an Array.
+    var thisItem;
+    for(var item in index) {
+      if(lastItem==undefined) {
+        thisItem=item;
+        break;
+      }
+      if(item == lastItem) {
+        lastItem=undefined;
       }
     }
-    //build up index from scratch:
-    indexCache[category] = {};
-    for(var i = 0; i < localStorage.length; i++) {
-      var keyParts = localStorage.key(i).split('$');
-      if(keyParts.length == 2 && keyParts[0] == category) {
-        indexCache[category][keyParts[1]] = 0;
-      }
+    if(thisItem==undefined) {
+      finishedCb();
+    } else {
+      itemCb(item, function() {
+        iterate(index, itemCb, finishedCb, thisItem);
+      });
     }
-    localStorage[indexKey+'_index_'+category] = JSON.stringify(indexCache[category]);
-    return indexCache[category];
   }
-  function updateLocalIndex(category, key) {
-    getLocalIndex(category);//prime indexCache
-    indexCache[category][key] = new Date().getTime();
-    localStorage[indexKey+'_index_'+category] = JSON.stringify(indexCache[category]);
+  function pullIn(localIndex, remoteIndex, client, cb) {//iterates over remoteIndex, pulling where necessary
+    iterate(remoteIndex, function(item, doneCb) {
+      if(!localIndex[item] || localIndex[item] < remoteIndex[item]) {
+        client.get(item, function(err, data) {
+          if(!err) {
+            localIndex[item]=remoteIndex[item]
+            localStorage[category+'$_index']=JSON.stringify(localIndex);
+            localStorage[category+'$'+item]=data;
+          }
+          doneCb();
+        });
+      } else {
+        doneCb();
+      }
+    }, cb);
   }
-  function pull(cb) {
+  function pushOut(localIndex, remoteIndex, client, cb) {//iterates over localIndex, pushing where necessary
+    var havePushed=false;
+    iterate(localIndex, function(item) {
+      if(!remoteIndex[item] || remoteIndex[item] < localIndex[item]) {
+        client.put(item, localStorage[category+'$'+item], function(err) {
+          if(err) {
+            console.log('error pushing: '+err);
+          } else {//success reported, so set remoteIndex timestamp to ours
+            remoteIndex[item]=localIndex[item];
+            havePushed=true;
+          }
+          doneCb();
+        });
+      } else {
+        doneCb();
+      }
+    }, function() {
+      if(havePushed) {
+        client.put('_index', JSON.stringify(remoteIndex), function(err) {
+          if(err) {
+            console.log('error pushing index: '+err);
+          }
+          cb();
+        });
+      } else {
+        cb();
+      }
+    });
+  }
+  function pullCategory(storageInfo, category, bearerToken, cb) {//calls pullIn, then pushOut for a category
+    var client=remoteStorage.createClient(storageInfo, category, bearerToken);
+    client.get('_index', function(err, data) {
+      if((!err) && data) {
+        var remoteIndex=parseObj(data);
+        var localIndex = parseObj(localStorage[category+'$_index']);
+        pullIn(localIndex, remoteIndex, client, function() {
+          pushOut(localIndex, remoteIndex, client, cb);
+        });
+      }
+    });
+  }
+  function pullCategories(storageInfo, categories, bearerToken, cb) {//calls pullCategory once for every category
+    if(categories.length) {
+      var thisCat=categories.shift();
+      pullCategory(storageInfo, thisCat, bearerToken, function() {
+        pullCategories(storageInfo, categories, bearerToken, cb);
+      });
+    } else {
+      cb();
+    }
+  }
+  function pull(cb) {//gathers settings and calls pullCategories
     console.log('pull');
     var categories, storageInfo, bearerToken;
     try {
@@ -106,43 +171,12 @@ var syncer = (function() {
     } catch(e) {
     }
     if(categories && storageInfo && bearerToken) {
-      for(var i=0; i<categories.length; i++) {
-        var client=remoteStorage.createClient(storageInfo, categories[i], bearerToken);
-        client.get(indexKey, function(err, data) {
-          if((!err) && data) {
-            var remoteIndex = JSON.parse(data);
-            var localIndex = getLocalIndex(category);
-            JSON.parse(localStorage[clients[category]+'$'+indexKey]);
-            var key;
-            for(key in remoteIndex) {
-              if(!localIndex[key] || localIndex[key] < remoteIndex[key]) {
-                client.get(key, function(err, data) {
-                  updateLocalIndex(category, key);
-                  localStorage[category+'$'+key] = data;
-                });
-              }
-            }
-            var putIndex = false;
-            for(key in localIndex) {
-              if(!remoteIndex[key] || remoteIndex[key] < localIndex[key]) {
-                putIndex = true;
-                client.put(key, localStorage[category+'$'+key], function(err, data) {
-                });
-              }
-            }
-            //todo: deal with upload failures
-            client.put(indexKey, JSON.stringify(localIndex), function(err, data) {
-            });
-          }
-        });
-      }
+      pullCategories(storageInfo, categories, bearerToken, cb);
     }
-    cb();//not really finished here yet actually
   }
-  function push(category, item, cb) {
-    console.log('push '+category+'$'+item);
+  function pushItem(category, key, timestamp, indexStr, valueStr, cb) {
+    console.log('push '+category+'$'+valueStr);
     if(category != '_unhosted') {
-      var index = updateLocalIndex(category, item);
       var storageInfo, bearerToken;
       try {
         storageInfo=JSON.parse(localStorage['_unhosted$storageInfo']);
@@ -151,8 +185,8 @@ var syncer = (function() {
       }
       if(storageInfo && bearerToken) {
         var client = remoteStorage.createClient(storageInfo, category, bearerToken);
-        client.put(indexKey, JSON.stringify(getLocalIndex(category)), function(err, data) {
-          client.put(item, localStorage[category+'$'+item], function(err, data) {
+        client.put('_index', indexStr, function(err, data) {
+          client.put(key+':'+timestamp, valueStr, function(err, data) {
           });
         });
       }
@@ -175,9 +209,10 @@ var syncer = (function() {
   function onLoad() {
     require(['./unhosted/remoteStorage'], function(drop) {
       remoteStorage=drop;
-      if(localStorage['_unhosted$pushInterval']) {
+      if(localStorage['_unhosted$pullInterval']) {
+        delete localStorage['_unhosted$lastPullStartTime'];
         work();
-        setInterval(work, localStorage['_unhosted$pushInterval']*1000);
+        setInterval(work, localStorage['_unhosted$pullInterval']*1000);
       }
     });
   }
@@ -195,9 +230,35 @@ var syncer = (function() {
   function getUserAddress() {
     return localStorage['_unhosted$userAddress'];
   }
-  function setItem(category, item, value, cb) {
-    localStorage[category+'$'+item]=value;
-    pushItem(category, item, cb);
+  function setItem(category, key, valueStr, cb) {
+    if(!cb) {
+      cb=function(err) {
+        if(err) {
+          console.log('setItem without a callback, suffered error:'+err);
+        }
+      };
+    }
+    if(key=='_index') {
+      cb('item key "_index" is reserved, pick another one please');
+    } else {
+      var currValStr = localStorage[category+'$'+key];
+      if(valueStr != currValStr) {
+        var now = new Date().getTime();
+        var index;
+        try {
+          index=JSON.parse(localStorage[category+'$_index']);
+        } catch(e) {
+        }
+        if(!index) {
+          index={};
+        }
+        index[key]=now;
+        var indexStr=JSON.stringify(index);
+        localStorage[category+'$_index']=indexStr;
+        localStorage[category+'$'+key]=valueStr;
+        pushItem(category, key, now, indexStr, valueStr, cb);
+      }
+    }
   }
   onLoad();
   return {
