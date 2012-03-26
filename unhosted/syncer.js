@@ -69,39 +69,40 @@ var syncer = (function() {
     });
   }
   function parseObj(str) {
+    var obj;
     try {
-      return JSON.parse(str);
+      obj = JSON.parse(str);
     } catch(e) {
+    }
+    if(obj) {//so str is parseable /and/ the result is not falsy
+      return obj;
+    } else {
       return {};
     }
   }
-  function iterate(index, itemCb, finishedCb, lastItem) {//helper function to async over an Array.
-    var thisItem;
-    for(var item in index) {
-      if(lastItem==undefined) {
-        thisItem=item;
-        break;
-      }
-      if(item == lastItem) {
-        lastItem=undefined;
+  function iterate(obj, itemCb, finishedCb, lastItem) {//helper function to async over an object's keys.
+    if(typeof(obj) == 'object') {
+      for(var thisItem in obj) {
+        if(!lastItem) {
+          itemCb(thisItem, function() {
+            iterate(obj, itemCb, finishedCb, thisItem);
+          });
+          return;//execution will continue in the callback of itemCb
+        } else if(thisItem == lastItem) {
+          lastItem = undefined;//go execute on next one
+        }
       }
     }
-    if(thisItem==undefined) {
-      finishedCb();
-    } else {
-      itemCb(item, function() {
-        iterate(index, itemCb, finishedCb, thisItem);
-      });
-    }
+    finishedCb();
   }
   function pullIn(localIndex, remoteIndex, client, cb) {//iterates over remoteIndex, pulling where necessary
     iterate(remoteIndex, function(item, doneCb) {
       if(!localIndex[item] || localIndex[item] < remoteIndex[item]) {
-        client.get(item, function(err, data) {
+        client.get(item+':'+remoteIndex[item], function(err, data) {
           if(!err) {
             localIndex[item]=remoteIndex[item]
-            localStorage[category+'$_index']=JSON.stringify(localIndex);
-            localStorage[category+'$'+item]=data;
+            localStorage[client.category+'$_index']=JSON.stringify(localIndex);
+            localStorage[client.category+'$'+item]=data;
           }
           doneCb();
         });
@@ -112,9 +113,9 @@ var syncer = (function() {
   }
   function pushOut(localIndex, remoteIndex, client, cb) {//iterates over localIndex, pushing where necessary
     var havePushed=false;
-    iterate(localIndex, function(item) {
+    iterate(localIndex, function(item, doneCb) {
       if(!remoteIndex[item] || remoteIndex[item] < localIndex[item]) {
-        client.put(item, localStorage[category+'$'+item], function(err) {
+        client.put(item+':'+localIndex[item], localStorage[client.category+'$'+item], function(err) {
           if(err) {
             console.log('error pushing: '+err);
           } else {//success reported, so set remoteIndex timestamp to ours
@@ -141,6 +142,7 @@ var syncer = (function() {
   }
   function pullCategory(storageInfo, category, bearerToken, cb) {//calls pullIn, then pushOut for a category
     var client=remoteStorage.createClient(storageInfo, category, bearerToken);
+    client.category = category;
     client.get('_index', function(err, data) {
       if((!err) && data) {
         var remoteIndex=parseObj(data);
