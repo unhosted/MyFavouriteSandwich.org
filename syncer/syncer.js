@@ -275,35 +275,8 @@ var syncer = (function() {
     setItem            : setItem,//() for instance when the user explicitly hits 'go offline'
     pull               : pull,//() for instance when the user explicitly hits 'refresh view'
     onReadyStateChange : onReadyStateChange,
+    onChange : onChange,
     getUserAddress     : getUserAddress
   };
-  //to catch the sync state, look for frame messages starting with '_unhosted:'
 })();
 
-// remote data structure:
-// index
-// favSandwich:timestamp
-// 
-
-// we can't tell when a key has changed, and don't want to keep sha's of them. so the user should connect(), disconnect(), and then
-// getItem, setItem, removeItem, length, key on remoteStorage instead of on localStorage
-// fixItem to make sure it never gets expulsed from cache and is always prefetched.
-// or fetchItems and then synchronous getItem
-// adn then flushItems.
-//
-// or have localStorage, synced, and remote.
-// connect userAddress, pullInterval, scopes, cb(err) will load cache according to cache list
-// disconnect cb(err) will remove cache and flush through any pending writes.
-// 
-// getItem key, cb //adds the item to the cache and to the cache list.
-// setItem key, value, cb(err) //cache with writethrough
-// removeItem key, value, cb(err) //remove from remote and, if present, also from cache
-//
-// length - will give the remote length
-// key - int -> key on remote
-// cached - int -> boolean
-//
-// flushItem category$item, cb(err) //remove only from cache and cache list
-// storeItem category$item, value, cb(err) only store remotely, don't add to cache or cache list
-// fetchItem [user@host/]category$item, cb(err, data)
-//

@@ -16,6 +16,9 @@ Pushes any pending changes to remote, and then wipes localStorage clean. Only ca
 
 * cb()
 
+## getUserAddress
+* @return string userAddress of currently connected user (or undefined if there is none)
+
 ## onReadyStateChange
 Called with an object when (dis)connecting and when starting/finishing a sync run.
 
