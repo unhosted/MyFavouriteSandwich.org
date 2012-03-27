@@ -213,14 +213,11 @@ var syncer = (function() {
     cb();//not really finished here yet actually
   }
   function onLoad() {
-    require(['./unhosted/remoteStorage'], function(drop) {
-      remoteStorage=drop;
-      if(localStorage['_unhosted$pullInterval']) {
-        delete localStorage['_unhosted$lastPullStartTime'];
-        work();
-        setInterval(work, localStorage['_unhosted$pullInterval']*1000);
-      }
-    });
+    if(localStorage['_unhosted$pullInterval']) {
+      delete localStorage['_unhosted$lastPullStartTime'];
+      work();
+      setInterval(work, localStorage['_unhosted$pullInterval']*1000);
+    }
   }
   function work() {
     var now = new Date().getTime();
