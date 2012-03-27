@@ -15,24 +15,7 @@
     <script src="/unhosted/require.js"></script>
     <script src="/unhosted/syncer.js"></script>
     <script> 
-    function getOrigin() {
-      return location.protocol+'//'+location.host;
-    }
     function onload () {
-      //handle changes coming in from other tabs - and other devices!
-      window.addEventListener('message', function(msg) {
-        if(msg.origin == getOrigin() && msg.data.substring(0, '_unhosted:'.length) == '_unhosted:') {
-          var msgBody;
-          try {
-            msgBody = JSON.parse(msg.substring('_unhosted:'.length));
-          } catch(e) {
-          }
-          if(msgBody) {
-            processFavSandwich(msg.msgBody);
-          }
-        }
-      }, false);
-
       //display connection status and connect/disconnect button:
       syncer.onReadyStateChange(function(obj) {
         if(obj.connected) {
@@ -42,7 +25,9 @@
           document.getElementById('loggedInUser').innerHTML=
             '<span>Logged in as <strong>'
             +syncer.getUserAddress()
-            +'</strong> [<a id="logout">Logout</a>]</span>';
+            +'</strong> [<a id="logout">Logout</a>]'
+            +(obj.syncing?' Syncing... ':'')
+            +'</span>';
           document.getElementById('logout').onclick= function() {
             syncer.disconnect();
           }
@@ -54,11 +39,13 @@
             syncer.connect(document.getElementById('userAddress').value, ['sandwiches'], 10);
           };
         }
-        retrieveFavSandwich();
+      });
+      syncer.onChange(function(obj) {
+        if(obj.category == 'sandwiches' && obj.key=='favSandwich') {
+          processFavSandwich(obj.newValue);
+        }
       });
     }
-    </script>
-<script>
 
 //LOGGED IN:
 function retrieveFavSandwich() { 

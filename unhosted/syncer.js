@@ -3,6 +3,7 @@ var syncer = (function() {
   var indexKey;
   var readyState={};
   orsc=function(obj){console.log('ready state changed to:');console.log(obj);};
+  oc=function(obj){console.log('incoming changeset:');console.log(obj);};
   function changeReadyState(field, value) {
     readyState[field]=value;
     orsc(readyState);
@@ -92,9 +93,17 @@ var syncer = (function() {
       if(!localIndex[item] || localIndex[item] < remoteIndex[item]) {
         client.get(item+':'+remoteIndex[item], function(err, data) {
           if(!err) {
+            var oldValue = localStorage[client.category+'$'+item];
             localIndex[item]=remoteIndex[item]
             localStorage[client.category+'$_index']=JSON.stringify(localIndex);
             localStorage[client.category+'$'+item]=data;
+            oc({
+              category: client.category,
+              key: item,
+              oldValue: oldValue,
+              newValue: data,
+              timestamp: remoteIndex[item]
+            });
           }
           doneCb();
         });
@@ -221,6 +230,9 @@ var syncer = (function() {
   function onReadyStateChange(cb) {
     orsc=cb;
     changeReadyState('connected', (localStorage['_unhosted$bearerToken'] != null));
+  }
+  function onChange(cb) {
+    oc=cb;
   }
   function getUserAddress() {
     return localStorage['_unhosted$userAddress'];
