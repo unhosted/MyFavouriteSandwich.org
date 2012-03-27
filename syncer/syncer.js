@@ -31,7 +31,7 @@ var syncer = (function() {
       return;
     }
     if(typeof(dialogPath) === 'undefined') {
-      dialogPath = '/unhosted/dialog.html';
+      dialogPath = '/syncer/dialog.html';
     }
     if(typeof(pullInterval) === 'undefined') {
       pullInterval = 60;
@@ -181,9 +181,9 @@ var syncer = (function() {
       if(!localStorage['_unhosted$lastPullStartTime'] //never pulled yet
         || parseInt(localStorage['_unhosted$lastPullStartTime']) + localStorage['_unhosted$pullInterval']*1000 < now) {//time to pull
         localStorage['_unhosted$lastPullStartTime']=now;
-        changeReadyState('pulling', true);
+        changeReadyState('syncing', true);
         pull(function() {
-          changeReadyState('pulling', false);
+          changeReadyState('syncing', false);
           cb();
         });
       } else {
