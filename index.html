@@ -10,13 +10,15 @@
 <link rel="stylesheet" href="css/uncompressed/text.css" />
 <link rel="stylesheet" href="general.css" />
 <link rel="stylesheet" href="css/uncompressed/layout.css" />
-    <script src="syncer/syncer.js"></script>
+    <script src="syncer/require.js"></script>
     <script> 
     function onload () {
-      syncer.display('remotestorage-bar', ['sandwiches'], 'syncer/', function(obj) {
-        if(obj.category == 'sandwiches' && obj.key=='favSandwich') {
-          processFavSandwich(obj.newValue);
-        }
+      require(['syncer/syncer'], function(syncer) {
+        syncer.display('remotestorage-bar', ['sandwiches'], 'syncer/', function(obj) {
+          if(obj.category == 'sandwiches' && obj.key=='favSandwich') {
+            processFavSandwich(obj.newValue);
+          }
+        });
       });
     }
 
