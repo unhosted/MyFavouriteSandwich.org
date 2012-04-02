@@ -10,36 +10,10 @@
 <link rel="stylesheet" href="css/uncompressed/text.css" />
 <link rel="stylesheet" href="general.css" />
 <link rel="stylesheet" href="css/uncompressed/layout.css" />
-
-    <script src="syncer/remoteStorage-0.5.5.js"></script>
     <script src="syncer/syncer.js"></script>
     <script> 
     function onload () {
-      //display connection status and connect/disconnect button:
-      syncer.onReadyStateChange(function(obj) {
-        if(obj.connected) {
-          document.getElementById('loginScreen').style.display='none';
-          document.getElementById('loading').style.display='none';
-          document.getElementById('loggedIn').style.display='block';
-          document.getElementById('loggedInUser').innerHTML=
-            '<span>Logged in as <strong>'
-            +syncer.getUserAddress()
-            +'</strong> [<a id="logout">Logout</a>]'
-            +(obj.syncing?' Syncing... ':'')
-            +'</span>';
-          document.getElementById('logout').onclick= function() {
-            syncer.disconnect();
-          }
-        } else {
-          document.getElementById('loading').style.display='none';
-          document.getElementById('loggedIn').style.display='none';
-          document.getElementById('loginScreen').style.display='block';
-          document.getElementById('login').onclick = function() {
-            syncer.connect(document.getElementById('userAddress').value, ['sandwiches'], 10);
-          };
-        }
-      });
-      syncer.onChange(function(obj) {
+      syncer.display('remotestorage-bar', ['sandwiches'], 'syncer/', function(obj) {
         if(obj.category == 'sandwiches' && obj.key=='favSandwich') {
           processFavSandwich(obj.newValue);
         }
@@ -48,27 +22,19 @@
 
 //LOGGED IN:
 function retrieveFavSandwich() { 
-  syncer.getItem('sandwiches', 'favSandwich', function(err, data) {
-    if(err) {
-      console.log(err);
-    } else {
-      processFavSandwich(data);
-    }
-  });
+  processFavSandwich(syncer.getCollection('favourite-sandwich-ingredients'));
 }
-function processFavSandwich(text) {
-  if(text) {
-    var sandwich = JSON.parse(text);
-    document.getElementById('showFirstIngredient').innerHTML = sandwich.ingredients[0];
-    document.getElementById('showSecondIngredient').innerHTML = sandwich.ingredients[1];
-    document.getElementById('firstIngredient').value = sandwich.ingredients[0];
-    document.getElementById('secondIngredient').value = sandwich.ingredients[1];
-  }
+function processFavSandwich(ingredients) {
+  document.getElementById('showFirstIngredient').innerHTML = ingredients[0];
+  document.getElementById('showSecondIngredient').innerHTML = ingredients[1];
+  document.getElementById('firstIngredient').value = ingredients[0];
+  document.getElementById('secondIngredient').value = ingredients[1];
 }
 function saveFavSandwich(ingredients) {
-  var str = JSON.stringify({"ingredients":ingredients});
-  syncer.setItem('sandwiches', 'favSandwich', str);
-  processFavSandwich(str);
+  for(var i=0; i<ingredients.length; i++) {
+    syncer.setItem('favourite-sandwich-ingredients', i, ingredients[i]);
+  }
+  processFavSandwich(ingredients);
 }
 </script>
 </head>
@@ -81,28 +47,11 @@ function saveFavSandwich(ingredients) {
 </div>
 
 <div id="mainWrap">
-  <div id="loading">
-    <header>
-      <h1>My Favourite Sandwich</h1>
-      Loading...
-    </header>
-  </div>
-  <div id="loginScreen" style="display:none">
-    <header>
-      <h1>My Favourite Sandwich</h1>
-      <p>Login with my remoteStorage account</p>
-      <p>
-        <input id="userAddress" placeholder="user@server" autofocus style="color:white; margin:4em 0 .5em; width:9.35em; padding-right:6em; height:2.5em; padding-left:3em; background:url('../syncer/remoteStorage-icon.png') no-repeat .3em center" >
-        <input class="submit" id="login" type="submit" style="top:1.2em">
-      </p>
-    </header>
-    <div id="register">
-      <p><strong>Don't have a remoteStorage account? </strong> Register at <a href="https://5apps.com">5apps</a> or <a href="https://owncube.com">OwnCube</a>.</p>
-    </div>
-  </div>
-  <div id="loggedIn" style="display:none">
+  <div id="loggedIn">
     <div id="preheader">
-        <span id="loggedInUser"></span>
+        <span style="left:35em">
+          <span id="remotestorage-bar"></span>
+        </span>
     </div>
       
     <header class="data">
@@ -114,7 +63,7 @@ function saveFavSandwich(ingredients) {
       <input class="submitingredients" name="submit" type="submit" value="Submit!" onclick="saveFavSandwich(
               [document.getElementById('firstIngredient').value,
               document.getElementById('secondIngredient').value]);"/>
-    </header>      
+    </header>
   </div>
 
 

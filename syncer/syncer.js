@@ -1,3 +1,8 @@
+//remoteStorage-0.5.5.js:
+
+(function(){function c(c,d,e){a[c]=e;var f=c.substring(0,c.lastIndexOf("/")+1);b[c]=[];for(var g=0;g<d.length;g++)d[g].substring(0,2)=="./"&&(d[g]=d[g].substring(2)),b[c].push(f+d[g])}function d(c){if(c=="require")return function(){};var e=b[c],f={};for(var g=0;g<e.length;g++)f[e[g]]=d(e[g]);var h=[];for(var g=0;g<e.length;g++)h.push(f[e[g]]);return a[c].apply({},h)}var a={},b={};c("lib/platform",[],function(){function a(a){var b=!1,c;a.timeout&&(c=window.setTimeout(function(){b=!0,a.error("timeout")},a.timeout));var d=new XMLHttpRequest;a.method||(a.method="GET"),d.open(a.method,a.url,!0);if(a.headers)for(var e in a.headers)d.setRequestHeader(e,a.headers[e]);d.onreadystatechange=function(){d.readyState==4&&!b&&(c&&window.clearTimeout(c),d.status==200||d.status==201||d.status==204?a.success(d.responseText):a.error(d.status))},typeof a.data=="string"?d.send(a.data):d.send()}function b(a){var b=new XDomainRequest;b.timeout=a.timeout||3e3,b.open(a.method,a.url),b.onload=function(){b.status==200||b.status==201||b.status==204?a.success(xhr.responseText):a.error(xhr.status)},b.onerror=function(){err("unknown error")},b.ontimeout=function(){err(timeout)},a.data?b.send(a.data):b.send()}function c(a){var b=require("http"),c=require("https"),d=require("url");a.method||(a.method="GET"),a.data||(a.data=null);var e=d.parse(a.url),f={method:a.method,host:e.hostname,path:e.path,port:e.port?port:e.protocol=="https:"?443:80,headers:a.headers},g,h,i=e.protocol=="https:"?c:b,j=i.request(f,function(b){var c="";b.setEncoding("utf8"),b.on("data",function(a){c+=a}),b.on("end",function(){g&&clearTimeout(g),h||(b.statusCode==200||b.statusCode==201||b.statusCode==204?a.success(c):a.error(b.statusCode))})});a.timeout&&(g=setTimeout(function(){a.error("timeout"),h=!0},a.timeout)),a.data?j.end(a.data):j.end()}function d(a,b){var c=(new DOMParser).parseFromString(a,"text/xml"),d=c.getElementsByTagName("Link"),e={Link:[]};for(var f=0;f<d.length;f++){var g={};for(var h=0;h<d[f].attributes.length;h++)g[d[f].attributes[h].name]=d[f].attributes[h].value;g.rel&&e.Link.push({"@":g})}b(null,e)}function e(a,b){var c=require("xml2js");(new c.Parser).parseString(a,b)}return typeof window=="undefined"?{ajax:c,parseXml:e}:window.XDomainRequest?{ajax:b,parseXml:d}:{ajax:a,parseXml:d}}),c("lib/couch",["./platform"],function(a){function c(a){if(!b){try{b=JSON.parse(localStorage.getItem("_shadowCouchRev"))}catch(c){}b||(b={})}return b[a]}function d(a,c){if(!b)try{b=JSON.parse(localStorage.getItem("_shadowCouchRev"))}catch(d){}b||(b={}),b[a]=c,localStorage.setItem("_shadowCouchRev",JSON.stringify(b))}function e(a){var b=0;while(b<a.length&&a[b]=="u")b++;return b<a.length&&a[b]=="_"&&(a="u"+a),a}function f(b,c,d,e,f){var g={url:c,method:b,error:function(a){a==404?f(null,undefined):f(a,null)},success:function(a){f(null,a)},timeout:3e3};e&&(g.headers={Authorization:"Bearer "+e}),g.fields={withCredentials:"true"},b!="GET"&&(g.data=d),a.ajax(g)}function g(a,b,c,g){f("GET",a+e(c),null,b,function(a,b){if(a)g(a,b);else{var e;try{e=JSON.parse(b)}catch(f){}e&&e._rev?(d(c,e._rev),g(null,e.value)):typeof b=="undefined"?g(null,undefined):g("unparsable data from couch")}})}function h(a,b,g,h,i){var j=c(g),k={value:h};j&&(k._rev=j),f("PUT",a+e(g),JSON.stringify(k),b,function(c,j){if(c)c==409?f("GET",a+e(g),null,b,function(c,j){if(c)i("after 409, got a "+c);else{var l;try{l=JSON.parse(j)._rev}catch(m){}l?(k={value:h,_rev:l},d(g,l),f("PUT",a+e(g),JSON.stringify(k),b,function(a,b){a?i("after 409, second attempt got "+a):i(null)})):i("after 409, got unparseable JSON")}}):i(c);else{var k;try{k=JSON.parse(j)}catch(l){}k&&k.rev&&d(g,k.rev),i(null)}})}function i(a,b,g,h){var i=c(g);f("DELETE",a+e(g)+(i?"?rev="+i:""),null,b,function(c,i){c==409?f("GET",a+e(g),null,b,function(c,i){if(c)h("after 409, got a "+c);else{var j;try{j=JSON.parse(i)._rev}catch(k){}j?(d(g,j),f("DELETE",a+e(g)+"?rev="+j,null,b,function(a,b){a?h("after 409, second attempt got "+a):(d(g,undefined),h(null))})):h("after 409, got unparseable JSON")}}):(c||d(g,undefined),h(c))})}var b=null;return{get:g,put:h,"delete":i}}),c("lib/dav",["./platform"],function(a){function b(a){var b=0;while(b<a.length&&a[b]=="u")b++;return b<a.length&&a[b]=="_"&&(a="u"+a),a}function c(b,c,d,e,f,g){var h={url:c,method:b,error:function(a){a==404?f(null,undefined):f(a,null)},success:function(a){f(null,a)},timeout:3e3};h.headers={Authorization:"Bearer "+e,"Content-Type":"text/plain;charset=UTF-8"},h.fields={withCredentials:"true"},b!="GET"&&(h.data=d),a.ajax(h)}function d(a,d,e,f){c("GET",a+b(e),null,d,f)}function e(a,d,e,f,g){c("PUT",a+b(e),f,d,g)}function f(a,d,e,f){c("DELETE",a+b(e),null,d,f)}return{get:d,put:e,"delete":f}}),c("lib/webfinger",["./platform"],function(a){function b(a,b){var c=a.split("@");c.length<2?b("That is not a user address. There is no @-sign in it"):c.length>2?b("That is not a user address. There is more than one @-sign in it"):/^[\.0-9A-Za-z]+$/.test(c[0])?/^[\.0-9A-Za-z\-]+$/.test(c[1])?b(null,["https://"+c[1]+"/.well-known/host-meta","http://"+c[1]+"/.well-known/host-meta"]):b('That is not a user address. There are non-dotalphanumeric symbols after the @-sign: "'+c[1]+'"'):b('That is not a user address. There are non-dotalphanumeric symbols before the @-sign: "'+c[0]+'"')}function c(b,f,g){var h=b.shift();h?a.ajax({url:h,success:function(a){e(a,function(e,h){e?d(a,function(a,d){a?c(b,f,g):g(null,d)}):g(null,h)})},error:function(a){c(b,f,g)},timeout:f}):g("could not fetch xrd")}function d(b,c){a.parseXml(b,function(a,b){if(a)c(a);else if(b&&b.Link){var d={};if(b.Link&&b.Link["@"])b.Link["@"].rel&&(d[b.Link["@"].rel]=b.Link["@"]);else for(var e=0;e<b.Link.length;e++)b.Link[e]["@"]&&b.Link[e]["@"].rel&&(d[b.Link[e]["@"].rel]=b.Link[e]["@"]);c(null,d)}else c("found valid xml but with no Link elements in there")})}function e(a,b){var c;try{c=JSON.parse(a)}catch(d){b("not valid JSON");return}var e={};if(c&&c.links)for(var f=0;f<c.links.length;f++)e[c.links[f].rel]=c.links[f];b(null,e)}function f(a,d,e){b(a,function(b,f){b?e(err):c(f,d.timeout,function(b,f){if(b)e("could not fetch host-meta for "+a);else if(f.lrdd&&f.lrdd.template){var g=f.lrdd.template.split("{uri}"),h=[g.join("acct:"+a),g.join(a)];c(h,d.timeout,function(b,c){b?e("could not fetch lrdd for "+a):c.remoteStorage?e(null,c.remoteStorage):e("could not extract storageInfo from lrdd")})}else e("could not extract lrdd template from host-meta")})})}function g(a,b){var c=a.split("{category}");return c.length!=2?"cannot-resolve-template:"+a:c[0]+b+c[1]}return{getStorageInfo:f,resolveTemplate:g}}),c("lib/hardcoded",["./platform"],function(a){function c(b,c,d){a.ajax({url:"http://proxy.unhosted.org/lookup?q=acct:"+b,success:function(a){var b;try{b=JSON.parse(a)}catch(c){}b?d(null,b):d("err: unparsable response from IrisCouch check")},error:function(a){d("err: during IrisCouch test:"+a)},timeout:c.timeout})}function d(a){var b=a.split("@");return["libredocs","mail","browserid","me"].indexOf(b[0])==-1?b[0]+"@iriscouch.com":b[2].substring(0,b[2].indexOf("."))+"@iriscouch.com"}function e(a,d,e){var f=a.split("@");if(f.length<2)e("That is not a user address. There is no @-sign in it");else if(f.length>2)e("That is not a user address. There is more than one @-sign in it");else if(!/^[\.0-9A-Za-z]+$/.test(f[0]))e('That is not a user address. There are non-dotalphanumeric symbols before the @-sign: "'+f[0]+'"');else if(!/^[\.0-9A-Za-z\-]+$/.test(f[1]))e('That is not a user address. There are non-dotalphanumeric symbols after the @-sign: "'+f[1]+'"');else{while(f[1].indexOf(".")!=-1){if(b[f[1]]){blueprint=b[f[1]],e(null,{api:blueprint.api,auth:blueprint.authPrefix+a+blueprint.authSuffix,template:blueprint.templatePrefix+a+blueprint.templateSuffix});return}f[1]=f[1].substring(f[1].indexOf(".")+1)}new Date<new Date("9/9/2012")?c(a,d,e):e("err: not a guessable domain, and fakefinger-migration has ended")}}var b={"iriscouch.com":{api:"CouchDB",authPrefix:"http://proxy.unhosted.org/OAuth.html?userAddress=",authSuffix:"",templatePrefix:"http://proxy.unhosted.org/IrisCouch/",templateSuffix:"/{category}/"}};return function(){var a={api:"simple",authPrefix:"http://surf.unhosted.org:4000/_oauth/",authSuffix:"",templatePrefix:"http://surf.unhosted.org:4000/",templateSuffix:"/{category}/"},c=["leidenuniv.nl","leiden.edu","uva.nl","vu.nl","eur.nl","maastrichtuniversity.nl","ru.nl","rug.nl","uu.nl","tudelft.nl","utwente.nl","tue.nl","tilburguniversity.edu","wur.nl","wageningenuniversity.nl","ou.nl","lumc.nl","amc.nl"];for(var d=0;d<c.length;d++)b[c[d]]=a}(),{guessStorageInfo:e}}),c("remoteStorage",["require","./lib/platform","./lib/couch","./lib/dav","./lib/webfinger","./lib/hardcoded"],function(a,b,c,d,e,f){var g=function(a,b){e.getStorageInfo(a,{timeout:3e3},function(c,d){c?f.guessStorageInfo(a,{timeout:3e3},function(a,c){b(a,c)}):b(c,d)})},h=function(a,b,c){var d=["redirect_uri="+encodeURIComponent(c),"scope="+encodeURIComponent(b.join(",")),"response_type=token","client_id="+encodeURIComponent(c)];return a.auth+(a.auth.indexOf("?")===-1?"?":"&")+d.join("&")},i=function(a,b){b(a==="CouchDB"?c:d)},j=function(a,b,c){var d=e.resolveTemplate(a.template,b);return{get:function(b,e){typeof b!="string"?e('argument "key" should be a string'):i(a.api,function(a){a.get(d,c,b,e)})},put:function(b,e,f){typeof b!="string"?f('argument "key" should be a string'):typeof e!="string"?f('argument "value" should be a string'):i(a.api,function(a){a.put(d,c,b,e,f)})},"delete":function(b,e){typeof b!="string"?e('argument "key" should be a string'):i(a.api,function(a){a["delete"](d,c,b,e)})}}},k=function(){var a,b;if(location.hash.length>0){a=location.hash.split("&");for(var c=0;c<a.length;c++){a[c][0]=="#"&&(a[c]=a[c].substring(1));if(a[c].substring(0,"access_token=".length)=="access_token=")return a[c].substring("access_token=".length)}}return null};return{getStorageInfo:g,createOAuthAddress:h,createClient:j,receiveToken:k}}),remoteStorage=d("remoteStorage")})()
+
+//sync.js itself:
 var syncer = (function() {
   var indexCache = {};
   var indexKey;
@@ -31,7 +36,7 @@ var syncer = (function() {
       return;
     }
     if(typeof(dialogPath) === 'undefined') {
-      dialogPath = '/syncer/dialog.html';
+      dialogPath = 'syncer/dialog.html';
     }
     if(typeof(pullInterval) === 'undefined') {
       pullInterval = 60;
@@ -56,10 +61,6 @@ var syncer = (function() {
       }
     }, false);
     //TODO: deal with dialog failures
-  }
-  function disconnect() {
-    localStorage.clear();
-    changeReadyState('connected', false);
   }
   function parseObj(str) {
     var obj;
@@ -145,7 +146,7 @@ var syncer = (function() {
     var client=remoteStorage.createClient(storageInfo, category, bearerToken);
     client.category = category;
     client.get('_index', function(err, data) {
-      if((!err) && data) {
+      if(!err) {
         var remoteIndex=parseObj(data);
         var localIndex = parseObj(localStorage[category+'$_index']);
         pullIn(localIndex, remoteIndex, client, function() {
@@ -194,7 +195,7 @@ var syncer = (function() {
     }
   }
   function pushItem(category, key, timestamp, indexStr, valueStr, cb) {
-    console.log('push '+category+'$'+valueStr);
+    console.log('push '+category+'$'+key+': '+valueStr);
     if(category != '_unhosted') {
       var storageInfo, bearerToken;
       try {
@@ -210,7 +211,9 @@ var syncer = (function() {
         });
       }
     }
-    cb();//not really finished here yet actually
+    if(cb) {
+      cb();//not really finished here yet actually
+    }
   }
   function onLoad() {
     if(localStorage['_unhosted$pullInterval']) {
@@ -234,16 +237,17 @@ var syncer = (function() {
   function getUserAddress() {
     return localStorage['_unhosted$userAddress'];
   }
-  function setItem(category, key, valueStr, cb) {
-    if(!cb) {
-      cb=function(err) {
-        if(err) {
-          console.log('setItem without a callback, suffered error:'+err);
-        }
-      };
+  function getItem(category, key) {
+    try {
+      return JSON.parse(localStorage[category+'$'+key]);
+    } catch(e) {
+      return null;
     }
+  }
+  function setItem(category, key, value) {
+    var valueStr = JSON.stringify(value);
     if(key=='_index') {
-      cb('item key "_index" is reserved, pick another one please');
+      return 'item key "_index" is reserved, pick another one please';
     } else {
       var currValStr = localStorage[category+'$'+key];
       if(valueStr != currValStr) {
@@ -260,23 +264,113 @@ var syncer = (function() {
         var indexStr=JSON.stringify(index);
         localStorage[category+'$_index']=indexStr;
         localStorage[category+'$'+key]=valueStr;
-        pushItem(category, key, now, indexStr, valueStr, cb);
+        pushItem(category, key, now, indexStr, valueStr);
       }
     }
   }
-  function getItem(category, key, cb) {
-    cb(null, localStorage[category+'$'+key]);
+  function removeItem(category, key) {
+    if(key=='_index') {
+      return 'item key "_index" is reserved, pick another one please';
+    } else {
+      var index;
+      try {
+        index=JSON.parse(localStorage[category+'$_index']);
+      } catch(e) {
+      }
+      if(index) {
+        delete index[key];
+        var indexStr=JSON.stringify(index);
+        localStorage[category+'$_index']=indexStr;
+        delete localStorage[category+'$'+key]=valueStr;
+        pushItem(category, key, now, indexStr, null);
+      }
+    }
+  }
+  function getCollection(category) {
+    var index;
+    try {
+      index=JSON.parse(localStorage[category+'$_index']);
+    } catch(e) {
+    }
+    if(index) {
+      var items = [];
+      for(var i in index) {
+        try {
+          items.push(JSON.parse(localStorage[category+'$'+i]));
+        } catch(e) {
+        }
+      }
+      return items;
+    } else {
+      return [];
+    }
+  }
+  function display(barElement, categories, libDir, onChangeHandler) {
+    if(libDir.length && libDir[libDir.length - 1] != '/') {//libDir without trailing slash
+      libDir += '/'
+    }
+    document.getElementById(barElement).innerHTML = '<div id="remotestorage-loading">Loading...</div>'
+      +'<div id="remotestorage-disconnected" style="display:none">'
+      +'  <input id="remotestorage-useraddress" autofocus="" placeholder="user@server"'
+      +'    style="width:20em; height:2.5em; padding-left:4em; background:url(\''+libDir+'remoteStorage-icon.png\') no-repeat .3em center"'
+      +'> <input id="remotestorage-connect" type="submit" value="connect"'
+      +'    style="cursor:pointer;background-color: #006DCC; background-image: -moz-linear-gradient(center top , #0088CC, #0044CC); background-repeat: repeat-x;'
+      +'      border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25); border-radius: 4px; margin-left:-7em"'
+      +'><a style="padding-left:2em" href="http://unhosted.org/#remotestorage">Got your remote storage yet?</a></div>'
+      +'<div id="remotestorage-status"></div>';
+    onReadyStateChange(function(obj) {
+      if(obj.connected) {
+        document.getElementById('remotestorage-disconnected').style.display='none';
+        document.getElementById('remotestorage-loading').style.display='none';
+        document.getElementById('remotestorage-status').style.display='block';
+        document.getElementById('remotestorage-status').innerHTML=
+          '<span>Connected to <strong>'
+          +getUserAddress()
+          +'</strong> <input type="submit" value="disconnect" id="remotestorage-disconnect"></div>'
+          +(obj.syncing?' Syncing... ':'')
+          +'</span>';
+        document.getElementById('remotestorage-disconnect').onclick= function() { 
+          localStorage.clear();
+          onChangeHandler({key: null, oldValue: null, newValue: null});
+          changeReadyState('connected', false);
+        }
+      } else {
+        document.getElementById('remotestorage-loading').style.display='none';
+        document.getElementById('remotestorage-status').style.display='none';
+        document.getElementById('remotestorage-disconnected').style.display='block';
+        document.getElementById('remotestorage-connect').onclick = function() {
+          connect(document.getElementById('remotestorage-useraddress').value, categories, 10, libDir+'dialog.html');
+        };
+      }
+    });
+    onChange(onChangeHandler);
   }
   onLoad();
   return {
-    connect            : connect,//(userAddress, categories, pullInterval=60, dialog='/unhosted/dialog.html'), also forces a first pull & push and starts timers
-    disconnect         : disconnect,//(), also forces a last push and stops timers
-    getItem            : getItem,//() for instance when the user explicitly hits 'go offline'
-    setItem            : setItem,//() for instance when the user explicitly hits 'go offline'
-    pull               : pull,//() for instance when the user explicitly hits 'refresh view'
-    onReadyStateChange : onReadyStateChange,
-    onChange : onChange,
-    getUserAddress     : getUserAddress
+    getItem       : getItem,
+    getCollection : getCollection,
+    setItem       : setItem,
+    removeItem    : removeItem,
+    display       : display
   };
 })();
-
+//API:
+//
+// - call display(barElement, categories, libDir, onChangeHandler({key:.., oldValue:.., newValue:..}));
+// - getCollection retrieves the array of items regardless of their id (so it makes sense to store the id inside the item)
+// - CRUD: getItem gets one item. setItem for create and update. remoteItem for delete.
+//
+// a note on sync:
+// if just one client connects, then it will feel like localStorage while the user is connected. the only special case there is the moment the user connects.
+// when the page loads for the first time, there will be no data. then the user connects, and your app will receive onChange events. make sure you handle these well.
+// in fact, your app should already have a handler for 'storage' events, because they occur when another tab or window makes a change to localStorage.
+// so you'll be able to reuse that function.
+//
+// if the user tries to leave the page while there is still unsynced data, a 'leave page?' alert will be displayed. disconnecting while offline will lead to loss of data too.
+// but as long as you don't disconnect, it'll all be fine, and sync will resume when the tab is reopened and/or connectivity is re-established.
+//
+// when another device or browser makes a change, it will come in through your onChange handler. it will 'feel' like a change that came from another tab.
+// when another device makes a change while either that device or you, or both are disconnected from the remoteStorage, the change will come in later, and conflict resolution 
+// will be per item, on timestamp basis. note that these are the timestamps generated on the devices, so this only works well if all devices have their clocks in sync.
+// in all cases, you will get an event on your onChange handler for each time data is changed by another device. the event will contain both the old and the new value of the item,
+// so you can always override a change by issuing a setItem command back to the oldValue.
