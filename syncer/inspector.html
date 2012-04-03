@@ -5,14 +5,14 @@
     <script src="require.js"></script>
     <script>
       require(['./syncer'], function(syncer) {
-        syncer.onLog(function(str) {
+        document.getElementById('log-div').innerHTML = syncer.onLog(function(str) {
           document.getElementById('log-div').innerHTML += '<p>'+str+'</p>';
         });
       });
     </script>
   </head>
   <body>
-    <img src="inspector-gadget.jpg">Wowsers!
+    <p><img src="inspector-gadget.jpg">Wowsers! This gadget will inspect the debug log here:</p>
     <div id="log-div" style="border-style:solid"></div>
   </body>
 </html>

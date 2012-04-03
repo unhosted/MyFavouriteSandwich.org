@@ -15,6 +15,7 @@ define(['./remoteStorage'], function(remoteStorage) {
           cb(e.newValue);
         }
       }, false);
+      return localStorage['_unhosted$debugLog'];
     }
     function changeReadyState(field, value) {
       readyState[field]=value;
@@ -117,6 +118,7 @@ define(['./remoteStorage'], function(remoteStorage) {
                 newValue: data,
                 timestamp: remoteIndex[item]
               });
+              ol(client.category+'$'+item+' <- '+data);
             }
             doneCb();
           });
@@ -133,6 +135,7 @@ define(['./remoteStorage'], function(remoteStorage) {
             if(err) {
               console.log('error pushing: '+err);
             } else {//success reported, so set remoteIndex timestamp to ours
+              ol(client.category+'$'+item+' -> '+localStorage[client.category+'$'+item]);
               remoteIndex[item]=localIndex[item];
               havePushed=true;
             }
@@ -250,6 +253,9 @@ define(['./remoteStorage'], function(remoteStorage) {
       return localStorage['_unhosted$userAddress'];
     }
     function getItem(category, key) {
+      ol('syncer.getItem('
+        +JSON.stringify(category)+', '
+        +JSON.stringify(key)+');');
       try {
         return JSON.parse(localStorage[category+'$'+key]);
       } catch(e) {
@@ -257,6 +263,10 @@ define(['./remoteStorage'], function(remoteStorage) {
       }
     }
     function setItem(category, key, value) {
+      ol('syncer.setItem('
+        +JSON.stringify(category)+', '
+        +JSON.stringify(key)+', '
+        +JSON.stringify(value)+');');
       var valueStr = JSON.stringify(value);
       if(key=='_index') {
         return 'item key "_index" is reserved, pick another one please';
@@ -281,6 +291,9 @@ define(['./remoteStorage'], function(remoteStorage) {
       }
     }
     function removeItem(category, key) {
+      ol('syncer.remoteItem('
+        +JSON.stringify(category)+', '
+        +JSON.stringify(key)+');');
       if(key=='_index') {
         return 'item key "_index" is reserved, pick another one please';
       } else {
@@ -299,6 +312,8 @@ define(['./remoteStorage'], function(remoteStorage) {
       }
     }
     function getCollection(category) {
+      ol('syncer.getCollection('
+        +JSON.stringify(category)+');');
       var index;
       try {
         index=JSON.parse(localStorage[category+'$_index']);
