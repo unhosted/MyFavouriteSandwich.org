@@ -6,6 +6,16 @@ define(['./remoteStorage'], function(remoteStorage) {
     var readyState={};
     orsc=function(obj){console.log('ready state changed to:');console.log(obj);};
     oc=function(obj){console.log('incoming changeset:');console.log(obj);};
+    ol=function(str){
+      localStorage['_unhosted$debugLog'] = str;
+    }
+    function onLog(cb) {
+      window.addEventListener('storage', function(e) {
+        if(e.key == '_unhosted$debugLog') {
+          cb(e.newValue);
+        }
+      }, false);
+    }
     function changeReadyState(field, value) {
       readyState[field]=value;
       orsc(readyState);
@@ -28,6 +38,11 @@ define(['./remoteStorage'], function(remoteStorage) {
     //_unhosted$index:[category]
 
     function connect(userAddress, categories, pullInterval, dialogPath) {
+      ol('syncer.connect('
+        +JSON.stringify(userAddress)+', '
+        +JSON.stringify(categories)+', '
+        +JSON.stringify(pullInterval)+', '
+        +JSON.stringify(dialogPath)+');');
       if(localStorage['_unhosted$bearerToken']) {
         console.log('err: already connected');
         return;
@@ -307,6 +322,7 @@ define(['./remoteStorage'], function(remoteStorage) {
         libDir += '/'
       }
       document.getElementById(barElement).innerHTML = '<div id="remotestorage-loading">Loading...</div>'
+        +'<a href="'+libDir+'inspector.html" target="_blank"><img src="'+libDir+'inspector-gadget.jpg" style="width:32px;height:32px"></a>'
         +'<div id="remotestorage-disconnected" style="display:none">'
         +'  <input id="remotestorage-useraddress" autofocus="" placeholder="user@server"'
         +'    style="width:20em; height:2.5em; padding-left:4em; background:url(\''+libDir+'remoteStorage-icon.png\') no-repeat .3em center"'
@@ -348,7 +364,8 @@ define(['./remoteStorage'], function(remoteStorage) {
       getCollection : getCollection,
       setItem       : setItem,
       removeItem    : removeItem,
-      display       : display
+      display       : display,
+      onLog         : onLog
     };
   })();
   //API:
