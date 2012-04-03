@@ -16,9 +16,9 @@
     function onload () {
       require(['syncer/syncer'], function(drop) {
         syncer = drop;
-        syncer.display('remotestorage-bar', ['sandwiches'], 'syncer/', function(obj) {
-          if(obj.category == 'sandwiches' && obj.key=='favSandwich') {
-            processFavSandwich(obj.newValue);
+        syncer.display('remotestorage-bar', ['favourite-sandwich-ingredients'], 'syncer/', function(obj) {
+          if(obj.category == 'favourite-sandwich-ingredients') {
+            processFavSandwich(syncer.getCollection('favourite-sandwich-ingredients'));
           }
         });
       });
