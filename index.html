@@ -49,12 +49,12 @@ function saveFavSandwich(ingredients) {
 <div id="mainWrap">
   <div id="loggedIn">
     <div id="preheader">
-        <span style="left:35em">
-          <span id="remotestorage-bar"></span>
-        </span>
+      <span id="remotestorage-bar"></span>
     </div>
       
-    <header class="data">
+  
+  <header class="data">
+  <a href="syncer/inspector.html" target="_blank"><img src="syncer/inspector-gadget.jpg" style="width:32px;height:32px"></a>
       <p>My favourite sandwich has <strong><span id="showFirstIngredient"></span></strong> and 
         <strong><span id="showSecondIngredient"></span></strong> on it</p>
       <input id="firstIngredient" name="firstIngredient" onfocus="if(this.value=='1st ingredient'){this.className='formfocus'; this.value=''}" onblur="if(!this.value){this.className='formblur'; this.value='1st ingredient'}" type="text" value="1st ingredient"/>
@@ -95,6 +95,7 @@ function saveFavSandwich(ingredients) {
     </div>
     <div class="clear">
     </div>        
+  
   </footer>
 </div>
 </body>

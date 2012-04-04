@@ -297,7 +297,7 @@
       }
     }
     function removeItem(category, key) {
-      ol('syncer.remoteItem('
+      ol('syncer.removeItem('
         +JSON.stringify(category)+', '
         +JSON.stringify(key)+');');
       if(key=='_index') {
@@ -345,7 +345,6 @@
         libDir += '/'
       }
       document.getElementById(barElement).innerHTML = '<div id="remotestorage-loading">Loading...</div>'
-        +'<a href="'+libDir+'inspector.html" target="_blank"><img src="'+libDir+'inspector-gadget.jpg" style="width:32px;height:32px"></a>'
         +'<div id="remotestorage-disconnected" style="display:none">'
         +'  <input id="remotestorage-useraddress" autofocus="" placeholder="user@server"'
         +'    style="width:20em; height:2.5em; padding-left:4em; background:url(\''+libDir+'remoteStorage-icon.png\') no-repeat .3em center"'
@@ -402,7 +401,7 @@
   //
   // - call display(barElement, categories, libDir, onChangeHandler({key:.., oldValue:.., newValue:..}));
   // - getCollection retrieves the array of items regardless of their id (so it makes sense to store the id inside the item)
-  // - CRUD: getItem gets one item. setItem for create and update. remoteItem for delete.
+  // - CRUD: getItem gets one item. setItem for create and update. removeItem for delete.
   //
   // a note on sync:
   // if just one client connects, then it will feel like localStorage while the user is connected. the only special case there is the moment the user connects.
