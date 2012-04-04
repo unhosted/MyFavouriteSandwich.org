@@ -3,13 +3,11 @@
     <title>Inspector Gadget</title>
     <meta charset="utf-8">
     <link rel="icon" type="image/jpg" href="inspector-gadget.jpg">
-    <script src="require.js"></script>
+    <script src="include.js"></script>
     <script>
-      require(['./syncer'], function(syncer) {
-        document.getElementById('log-div').innerHTML = syncer.onLog(function(str) {
-          document.getElementById('log-div').innerHTML = '<p>'+str+'</p>'
-            + document.getElementById('log-div').innerHTML;
-        });
+      document.getElementById('log-div').innerHTML = syncer.onLog(function(str) {
+        document.getElementById('log-div').innerHTML = '<p>'+str+'</p>'
+          + document.getElementById('log-div').innerHTML;
       });
     </script>
   </head>

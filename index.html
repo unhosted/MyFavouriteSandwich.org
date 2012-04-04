@@ -10,17 +10,13 @@
 <link rel="stylesheet" href="css/uncompressed/text.css" />
 <link rel="stylesheet" href="general.css" />
 <link rel="stylesheet" href="css/uncompressed/layout.css" />
-    <script src="syncer/require.js"></script>
+    <script src="syncer/include.js"></script>
     <script> 
-    var syncer;
     function onload () {
-      require(['syncer/syncer'], function(drop) {
-        syncer = drop;
-        syncer.display('remotestorage-bar', ['favourite-sandwich-ingredients'], 'syncer/', function(obj) {
-          if(obj.category == 'favourite-sandwich-ingredients') {
-            processFavSandwich(syncer.getCollection('favourite-sandwich-ingredients'));
-          }
-        });
+      syncer.display('remotestorage-bar', ['favourite-sandwich-ingredients'], 'syncer/', function(obj) {
+        if(obj.category == 'favourite-sandwich-ingredients') {
+          processFavSandwich(syncer.getCollection('favourite-sandwich-ingredients'));
+        }
       });
     }
 
